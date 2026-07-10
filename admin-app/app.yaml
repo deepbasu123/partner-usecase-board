@@ -1,0 +1,21 @@
+command:
+  - "uvicorn"
+  - "backend.main:app"
+  - "--host"
+  - "0.0.0.0"
+  - "--port"
+  - "8000"
+
+env:
+  # Lakebase instance the admin app reads/writes. When a Lakebase "Database"
+  # resource is attached to the app, PGHOST/PGUSER are injected and the app
+  # mints a credential via its service-principal identity (see backend/db.py).
+  - name: LAKEBASE_INSTANCE
+    value: "REPLACE_WITH_INSTANCE_NAME"
+  - name: PGDATABASE
+    value: "databricks_postgres"
+  # Public board URL included in the "new use case" email to partners.
+  - name: BOARD_URL
+    value: "REPLACE_WITH_PORTAL_URL"
+  - name: EMAIL_FROM
+    value: "partner-board@example.com"
