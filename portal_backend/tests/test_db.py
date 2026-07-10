@@ -50,3 +50,9 @@ def test_list_all_partners_includes_created(db):
     db.get_or_create_partner("listed@example.com", "Beta GT", None)
     partners = db.list_all_partners()
     assert any(p["email"] == "listed@example.com" for p in partners)
+
+
+def test_get_partner_found_and_missing(db):
+    p = db.get_or_create_partner("fetch@example.com", "Gamma GT", None)
+    assert db.get_partner(p["id"])["company"] == "Gamma GT"
+    assert db.get_partner("00000000-0000-0000-0000-000000000000") is None

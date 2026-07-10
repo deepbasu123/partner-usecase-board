@@ -103,6 +103,13 @@ def create_response(use_case_id, partner_id, approach):
             f"partner {partner_id} already responded to {use_case_id}")
 
 
+def get_partner(partner_id):
+    with get_conn() as c, c.cursor() as cur:
+        cur.execute("SELECT id, email, company, contact_name, created_at "
+                    "FROM partners WHERE id = %s", (partner_id,))
+        return cur.fetchone()
+
+
 def list_all_partners():
     with get_conn() as c, c.cursor() as cur:
         cur.execute("SELECT id, email, company, contact_name, created_at "

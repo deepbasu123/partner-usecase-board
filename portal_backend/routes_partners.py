@@ -27,4 +27,8 @@ def me(request: Request):
     pid = sessions.read_session_cookie(request.cookies.get(sessions.SESSION_COOKIE_NAME, ""))
     if not pid:
         raise HTTPException(401, "not signed in")
-    return {"id": pid}
+    partner = db.get_partner(pid)
+    if not partner:
+        # Stale cookie for a partner that no longer exists.
+        raise HTTPException(401, "session no longer valid")
+    return {"id": partner["id"], "email": partner["email"], "company": partner["company"]}

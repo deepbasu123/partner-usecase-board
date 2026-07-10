@@ -42,11 +42,22 @@ def test_me_401_without_session(client):
     assert r.status_code == 401
 
 
-def test_me_returns_pid_with_session(client):
+def test_me_returns_partner_with_session(client):
     client.cookies.set(sessions.SESSION_COOKIE_NAME, _session_cookie("p9"))
-    r = client.get("/api/me")
+    with patch("portal_backend.routes_partners.db.get_partner",
+               return_value={"id": "p9", "email": "z@x.com", "company": "Zeta GT",
+                             "contact_name": None, "created_at": "t"}):
+        r = client.get("/api/me")
     assert r.status_code == 200
     assert r.json()["id"] == "p9"
+    assert r.json()["company"] == "Zeta GT"
+
+
+def test_me_401_when_partner_gone(client):
+    client.cookies.set(sessions.SESSION_COOKIE_NAME, _session_cookie("ghost"))
+    with patch("portal_backend.routes_partners.db.get_partner", return_value=None):
+        r = client.get("/api/me")
+    assert r.status_code == 401
 
 
 def test_list_cases(client):
