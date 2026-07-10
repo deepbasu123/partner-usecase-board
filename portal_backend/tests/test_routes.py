@@ -84,12 +84,13 @@ def test_response_requires_session(client):
 def test_response_created_201(client):
     client.cookies.set(sessions.SESSION_COOKIE_NAME, _session_cookie("p1"))
     with patch("portal_backend.routes_responses.db.get_use_case",
-               return_value={"id": "uc1", "title": "T", "posted_by": "admin@example.com"}), \
+               return_value={"id": "uc1", "title": "T", "status": "open",
+                             "posted_by": "admin@example.com"}), \
          patch("portal_backend.routes_responses.db.create_response",
                return_value={"id": "r1", "use_case_id": "uc1", "partner_id": "p1",
                              "approach": "x", "created_at": "t"}), \
-         patch("portal_backend.routes_responses.db.list_all_partners",
-               return_value=[{"id": "p1", "company": "Acme GT", "email": "a@x.com"}]), \
+         patch("portal_backend.routes_responses.db.get_partner",
+               return_value={"id": "p1", "company": "Acme GT", "email": "a@x.com"}), \
          patch("portal_backend.routes_responses.email.send_new_eoi"):
         r = client.post("/api/use-cases/uc1/responses", json={"approach": "x"})
     assert r.status_code == 201
@@ -100,7 +101,8 @@ def test_duplicate_response_returns_409(client):
     from portal_backend import db as dbmod
     client.cookies.set(sessions.SESSION_COOKIE_NAME, _session_cookie("p1"))
     with patch("portal_backend.routes_responses.db.get_use_case",
-               return_value={"id": "uc1", "title": "T", "posted_by": "admin@example.com"}), \
+               return_value={"id": "uc1", "title": "T", "status": "open",
+                             "posted_by": "admin@example.com"}), \
          patch("portal_backend.routes_responses.db.create_response",
                side_effect=dbmod.DuplicateResponse()):
         r = client.post("/api/use-cases/uc1/responses", json={"approach": "x"})
@@ -112,3 +114,27 @@ def test_response_404_when_case_missing(client):
     with patch("portal_backend.routes_responses.db.get_use_case", return_value=None):
         r = client.post("/api/use-cases/uc1/responses", json={"approach": "x"})
     assert r.status_code == 404
+
+
+def test_response_rejected_on_closed_case(client):
+    client.cookies.set(sessions.SESSION_COOKIE_NAME, _session_cookie("p1"))
+    with patch("portal_backend.routes_responses.db.get_use_case",
+               return_value={"id": "uc1", "title": "T", "status": "closed",
+                             "posted_by": "admin@example.com"}):
+        r = client.post("/api/use-cases/uc1/responses", json={"approach": "x"})
+    assert r.status_code == 409
+
+
+def test_get_case_hides_closed_from_public(client):
+    # A closed case must not be served on the public detail endpoint.
+    with patch("portal_backend.routes_board.db.get_use_case",
+               return_value={"id": "uc1", "title": "T", "status": "closed"}):
+        r = client.get("/api/use-cases/uc1")
+    assert r.status_code == 404
+
+
+def test_board_endpoints_need_no_session(client):
+    # Explicit guarantee: the public board is reachable with no cookie.
+    with patch("portal_backend.routes_board.db.list_open_use_cases", return_value=[]):
+        r = client.get("/api/use-cases")
+    assert r.status_code == 200

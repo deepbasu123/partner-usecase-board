@@ -46,7 +46,11 @@ def _conn_params():
     # never need the SDK or network.
     if not (host and user and pwd):
         from databricks.sdk import WorkspaceClient
-        instance = os.environ["LAKEBASE_INSTANCE"]
+        instance = os.environ.get("LAKEBASE_INSTANCE")
+        if not instance:
+            raise RuntimeError(
+                "LAKEBASE_INSTANCE is required to mint a Lakebase credential "
+                "when PGHOST/PGUSER/PGPASSWORD are not all set.")
         w = WorkspaceClient()
         host = host or w.database.get_database_instance(instance).read_write_dns
         user = user or os.environ["DATABRICKS_CLIENT_ID"]

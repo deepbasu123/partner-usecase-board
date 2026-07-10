@@ -21,6 +21,8 @@ def respond(uc_id: str, body: EoiIn, request: Request):
     uc = db.get_use_case(uc_id)
     if not uc:
         raise HTTPException(404, "no such use case")
+    if uc.get("status") != "open":
+        raise HTTPException(409, "this use case is closed")
 
     try:
         response_row = db.create_response(uc_id, pid, body.approach)
@@ -29,8 +31,7 @@ def respond(uc_id: str, body: EoiIn, request: Request):
 
     # Notify the poster plus any shared list. Look up the partner's company
     # for the email body; fall back gracefully if not found.
-    partner = next((p for p in db.list_all_partners() if p["id"] == pid),
-                   {"company": "A partner"})
+    partner = db.get_partner(pid) or {"company": "A partner"}
     recipients = list(_NOTIFY)
     poster = uc.get("posted_by") or os.environ.get("EMAIL_FROM")
     if poster and poster not in recipients:

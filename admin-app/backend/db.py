@@ -60,13 +60,20 @@ def create_use_case(title, description, industry, region, posted_by):
 
 
 def set_status(uc_id, status):
-    """Open or close a use case. closed_at is set/cleared accordingly."""
+    """Open or close a use case. closed_at is set/cleared accordingly.
+
+    Returns the full row (plus response_count) so the shape matches the
+    AdminCase the frontend already holds.
+    """
     with get_conn() as c, c.cursor() as cur:
         cur.execute(
             "UPDATE use_cases SET status = %s, "
             "closed_at = CASE WHEN %s = 'closed' THEN now() ELSE NULL END "
             "WHERE id = %s "
-            "RETURNING id, title, status, closed_at",
+            "RETURNING id, title, description, industry, region, status, "
+            "posted_by, created_at, closed_at, "
+            "(SELECT count(*) FROM responses r WHERE r.use_case_id = use_cases.id) "
+            "AS response_count",
             (status, status, uc_id))
         return cur.fetchone()
 
