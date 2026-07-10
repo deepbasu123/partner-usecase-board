@@ -1,14 +1,14 @@
 # Partner Use-Case Board — Design Spec
 
 **Date:** 2026-07-10
-**Author:** Deep Basu (Databricks Solutions Architect)
+**Author:** Databricks Solutions Architect
 **Status:** Approved design, pending implementation plan
 
 ## Problem
 
-Beth was looking for a Workforce Management solution in the ANZ channel. We tried to
-crowd-source it through the partner ecosystem (via Allyson) and got no response. We want a
-lightweight way for Databricks to **post use cases we need partner help on**, and for
+A Databricks account team was looking for a Workforce Management solution in the ANZ
+channel. We tried to crowd-source it through the partner ecosystem and got no response. We
+want a lightweight way for Databricks to **post use cases we need partner help on**, and for
 **GT partners to see them and raise their hand**. Start super simple, invite a controlled
 set of GT partners, see how it goes, iterate later.
 
@@ -47,7 +47,7 @@ Databricks data as its single source of truth.
 ## Architecture — two surfaces, one database
 
 ```
-   PARTNERS (no Databricks account)          DATABRICKS (Deep, Beth, Allyson)
+   PARTNERS (no Databricks account)          DATABRICKS (account team + partner team)
             │                                          │
             ▼                                          ▼
   ┌──────────────────────┐              ┌──────────────────────────┐
@@ -80,8 +80,8 @@ Databricks data as its single source of truth.
 - **Partner portal** — React SPA + FastAPI backend on **GCP Cloud Run** (public HTTPS,
   scales to zero, GCP sandbox access available). SPA never touches Lakebase directly; it
   only calls its own FastAPI, which holds the DB credentials server-side.
-- **Admin cockpit** — a Databricks App (behind workspace SSO) deployed to **deep-test**.
-  Only Databricks employees can reach it.
+- **Admin cockpit** — a Databricks App (behind workspace SSO) deployed to the target
+  Databricks workspace. Only Databricks employees can reach it.
 - **Lakebase** — single Postgres source of truth for both surfaces. No syncing.
 - **Email** — fires on the three lifecycle events below.
 
@@ -138,8 +138,8 @@ tip off competitors).
 2. **Databricks posts a use case** → email to **all** registered partners with title, the
    ask, and a link to the board.
 3. **Partner submits an EOI** → email to the case's `posted_by`, plus an optional
-   configurable shared address (e.g. you + Beth + Allyson), with the partner's company and
-   their approach.
+   configurable shared distribution list (the account + partner team), with the partner's
+   company and their approach.
 
 Sending mechanism to be confirmed early in implementation (candidates: Gmail API via the
 `/gmail` skill for pilot volume, or a transactional email API). Not locked until verified to
@@ -151,7 +151,7 @@ send cleanly from Cloud Run under the environment's supply-chain lockdown.
 partner-usecase-board/
 ├── portal-frontend/     React SPA (partner board + signup + EOI form)
 ├── portal-backend/      FastAPI: public API, Lakebase access, email, sessions → Cloud Run
-├── admin-app/           Databricks App (FastAPI + React): post/manage cases, view EOIs → deep-test
+├── admin-app/           Databricks App (FastAPI + React): post/manage cases, view EOIs → target workspace
 ├── db/                  Lakebase schema + seed (the 3 tables)
 └── deploy/              Cloud Run + Databricks Apps deploy scripts
 ```
