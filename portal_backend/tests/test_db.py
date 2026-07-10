@@ -10,6 +10,19 @@ def test_get_or_create_partner_is_idempotent(db):
     assert p1["company"] == "Acme GT"
 
 
+def test_ids_are_strings_not_uuid_objects(db):
+    # UUID objects break cookie signing (itsdangerous JSON) and JSON responses,
+    # so db.py must return ids as plain strings.
+    p = db.get_or_create_partner("strcheck@example.com", "Acme GT", None)
+    assert isinstance(p["id"], str)
+    uc = db.list_open_use_cases()[0]
+    assert isinstance(uc["id"], str)
+    r = db.create_response(uc["id"], p["id"], "x")
+    assert isinstance(r["id"], str)
+    assert isinstance(r["use_case_id"], str)
+    assert isinstance(r["partner_id"], str)
+
+
 def test_list_open_use_cases_returns_seeded_case(db):
     cases = db.list_open_use_cases()
     assert len(cases) >= 1

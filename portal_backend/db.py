@@ -19,8 +19,17 @@ import os
 
 import psycopg
 from psycopg.rows import dict_row
+from psycopg.types.string import TextLoader
 
 DATABASE = os.environ.get("PGDATABASE", "databricks_postgres")
+
+# Postgres UUID OID. Load UUID columns as plain strings (not Python UUID
+# objects) so ids serialize cleanly into JSON responses and signed cookies.
+_UUID_OID = 2950
+
+
+class _UuidAsText(TextLoader):
+    """Return uuid values as str."""
 
 
 class DuplicateResponse(Exception):
@@ -50,8 +59,10 @@ def _conn_params():
 
 
 def get_conn():
-    """Open a new autocommit-off connection with dict rows."""
-    return psycopg.connect(**_conn_params(), row_factory=dict_row)
+    """Open a new connection with dict rows and UUID-as-string loading."""
+    conn = psycopg.connect(**_conn_params(), row_factory=dict_row)
+    conn.adapters.register_loader(_UUID_OID, _UuidAsText)
+    return conn
 
 
 def list_open_use_cases():
