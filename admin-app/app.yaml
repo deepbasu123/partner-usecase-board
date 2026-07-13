@@ -7,15 +7,16 @@ command:
   - "8000"
 
 env:
-  # Lakebase instance the admin app reads/writes. When a Lakebase "Database"
-  # resource is attached to the app, PGHOST/PGUSER are injected and the app
-  # mints a credential via its service-principal identity (see backend/db.py).
+  # Lakebase instance the admin app reads/writes. The app's service principal
+  # is granted a SERVICE_PRINCIPAL instance role; backend/db.py mints a
+  # credential via that identity (PGHOST resolved from the instance).
   - name: LAKEBASE_INSTANCE
-    value: "REPLACE_WITH_INSTANCE_NAME"
+    value: "partner-board-db"
   - name: PGDATABASE
-    value: "databricks_postgres"
+    value: "partner_board"
   # Public board URL included in the "new use case" email to partners.
+  # Set once the Cloud Run portal is deployed; placeholder until then.
   - name: BOARD_URL
-    value: "REPLACE_WITH_PORTAL_URL"
+    value: "https://partner-board.example.com"
   - name: EMAIL_FROM
     value: "partner-board@example.com"
