@@ -27,7 +27,7 @@ export function CaseRow({ c, onChanged }: { c: AdminCase; onChanged: (c: AdminCa
   return (
     <div className="case-row">
       <div className="hd">
-        <div>
+        <div className="htxt">
           <h3>{c.title}</h3>
           <div className="meta">
             {c.region ? `${c.region} · ` : ""}
@@ -38,7 +38,7 @@ export function CaseRow({ c, onChanged }: { c: AdminCase; onChanged: (c: AdminCa
         <span className={`pill ${c.status === "open" ? "pill-open" : "pill-closed"}`}>{c.status}</span>
       </div>
 
-      <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 12 }}>
+      <div className="row-actions">
         <button className="count-chip" onClick={toggleResponses}>
           {c.response_count} response{c.response_count === 1 ? "" : "s"} {open ? "▲" : "▼"}
         </button>
@@ -60,7 +60,7 @@ export function CaseRow({ c, onChanged }: { c: AdminCase; onChanged: (c: AdminCa
                   <b>{r.company}</b>
                   <a href={`mailto:${r.email}`}>{r.email}</a>
                 </div>
-                {r.contact_name && <div className="muted" style={{ fontSize: 12.5, marginBottom: 4 }}>{r.contact_name}</div>}
+                {r.contact_name && <div className="who-name">{r.contact_name}</div>}
                 <div className="approach">{r.approach}</div>
               </div>
             ))

@@ -36,6 +36,7 @@ export function CreateCaseForm({ onCreated }: { onCreated: (c: AdminCase) => voi
   return (
     <div className="card">
       <h2>Post a use case</h2>
+      <p className="card-hint">Registered partners are emailed when you post.</p>
       {msg && <div className={`notice ${msg.ok ? "notice-ok" : "notice-err"}`}>{msg.text}</div>}
       <form onSubmit={submit}>
         <div className="field">
@@ -60,7 +61,7 @@ export function CreateCaseForm({ onCreated }: { onCreated: (c: AdminCase) => voi
                    placeholder="e.g. ANZ" />
           </div>
         </div>
-        <button className="btn btn-primary" type="submit" disabled={busy || !title.trim() || !description.trim()}>
+        <button className="btn btn-primary btn-block" type="submit" disabled={busy || !title.trim() || !description.trim()}>
           {busy ? "Posting…" : "Post & notify partners"}
         </button>
       </form>
