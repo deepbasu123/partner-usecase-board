@@ -46,9 +46,9 @@ Apps, and only the admin surface is a Databricks App. Both share one Lakebase.
 ## Local development
 
 ```bash
-# one-time: venv + deps (internal PyPI proxy under the lockdown)
+# one-time: venv + deps
 python3.13 -m venv .venv && . .venv/bin/activate
-pip install --index-url https://pypi-proxy.dev.databricks.com/simple -r portal_backend/requirements.txt
+pip install -r portal_backend/requirements.txt
 
 # run the full backend test suite against an ephemeral Postgres 16
 ./run_tests.sh

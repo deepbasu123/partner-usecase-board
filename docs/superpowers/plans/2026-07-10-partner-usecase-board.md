@@ -14,7 +14,7 @@
 - **Portal reaches Lakebase from outside Databricks** via a **service principal (M2M OAuth)**, minting a short-lived Lakebase credential with `WorkspaceClient(...).database.generate_database_credential(...)`. The SPA NEVER connects to Lakebase directly.
 - **No partner password** in the pilot — signup is email + company; a signed session cookie remembers them.
 - **Responses are private to Databricks** — no partner-to-partner visibility.
-- **NPM/PyPI lockdown** in this environment — pin every dependency to an exact version; use the internal PyPI proxy (`pypi-proxy.dev.databricks.com`) and the internal npm registry; use Homebrew `python3.13` (system python3 LibreSSL fails proxy TLS). Verify installs in Task 0, don't assume.
+- **NPM/PyPI lockdown** in this environment — pin every dependency to an exact version; use the internal PyPI proxy and the internal npm registry; use Homebrew `python3.13` (system python3 LibreSSL fails proxy TLS). Verify installs in Task 0, don't assume.
 - **Follow the house pattern** from `~/tritium-trip-planner` (backend/db.py dual-mode auth, Vite frontend, `app.yaml` for the Databricks App).
 - **Python** preferred for all backend logic; Databricks-native features where they fit.
 - **Verification** — every deliverable is exercised against the running system, then independently checked by a verification agent on a different model before it is called done (per CLAUDE.md).
@@ -156,9 +156,9 @@ If none send from Cloud Run egress: fallback is enqueue-to-Databricks (write a `
 - [ ] **Step 5: Prove the pinned installs work under lockdown**
 
 ```bash
-# Python (portal-backend deps), using internal proxy + Homebrew python
+# Python (portal-backend deps), using Homebrew python
 python3.13 -m venv /tmp/spikevenv && . /tmp/spikevenv/bin/activate
-pip install --index-url https://pypi-proxy.dev.databricks.com/simple \
+pip install \
   fastapi==0.137.1 "uvicorn[standard]==0.49.0" "psycopg[binary]==3.3.4" \
   httpx==0.28.1 databricks-sdk==0.118.0 itsdangerous==2.2.0
 # Node (portal-frontend) — scaffold a throwaway vite app and install

@@ -9,7 +9,7 @@ import psycopg
 from databricks.sdk import WorkspaceClient
 
 INST = "partner-board-db"
-ADMIN = "deep.basu@databricks.com"
+ADMIN = "admin@example.com"
 
 # --- use cases (title, description, industry, region, status) ---
 USE_CASES = [
