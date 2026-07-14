@@ -5,6 +5,8 @@ import react from "@vitejs/plugin-react";
 // FastAPI itself, so relative /api calls work.
 export default defineConfig({
   plugins: [react()],
+  // Served under /admin on Vercel, so built asset URLs must resolve there.
+  base: "/admin/",
   server: {
     port: 5174,
     proxy: {

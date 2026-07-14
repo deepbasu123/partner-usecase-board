@@ -1,9 +1,12 @@
 import { useEffect, useState } from "react";
-import { api, type AdminCase, type AdminPartner } from "./api";
+import { api, ApiError, type AdminCase, type AdminPartner } from "./api";
 import { CreateCaseForm } from "./components/CreateCaseForm";
 import { CaseRow } from "./components/CaseRow";
+import { AdminLogin } from "./components/AdminLogin";
 
 type Tab = "cases" | "partners";
+// null = still checking session; false = show login; true = authed.
+type Auth = boolean | null;
 
 function initials(email: string) {
   const name = email.split("@")[0] || "";
@@ -12,21 +15,49 @@ function initials(email: string) {
 }
 
 export default function App() {
+  const [authed, setAuthed] = useState<Auth>(null);
   const [who, setWho] = useState<string>("");
   const [tab, setTab] = useState<Tab>("cases");
   const [cases, setCases] = useState<AdminCase[] | null>(null);
   const [partners, setPartners] = useState<AdminPartner[] | null>(null);
 
+  // A 401 from any admin call means the session lapsed → return to login.
+  function onError(err: unknown) {
+    if (err instanceof ApiError && err.status === 401) setAuthed(false);
+  }
+
+  // Probe the session: whoami succeeds only with a valid admin cookie. Run on
+  // mount and again right after a successful login.
+  function probe() {
+    setAuthed(null);
+    api.whoami()
+      .then((w) => { setWho(w.email); setAuthed(true); })
+      .catch((err) => {
+        if (err instanceof ApiError && err.status === 401) setAuthed(false);
+        else { setWho(""); setAuthed(true); }  // non-auth error: don't lock out
+      });
+  }
+
+  useEffect(() => { probe(); }, []);
+
+  // Load cases once authenticated.
   useEffect(() => {
-    api.whoami().then((w) => setWho(w.email)).catch(() => setWho(""));
-    api.listCases().then(setCases).catch(() => setCases([]));
-  }, []);
+    if (authed !== true) return;
+    api.listCases().then(setCases).catch((err) => { onError(err); setCases([]); });
+  }, [authed]);
 
   useEffect(() => {
-    if (tab === "partners" && partners === null) {
-      api.listPartners().then(setPartners).catch(() => setPartners([]));
+    if (authed === true && tab === "partners" && partners === null) {
+      api.listPartners().then(setPartners).catch((err) => { onError(err); setPartners([]); });
     }
-  }, [tab, partners]);
+  }, [authed, tab, partners]);
+
+  if (authed === null) {
+    return <div className="login-shell"><div className="spinner" /></div>;
+  }
+  if (authed === false) {
+    return <AdminLogin onAuthed={probe} />;
+  }
 
   function onCreated(c: AdminCase) {
     setCases((prev) => [{ ...c, response_count: 0 }, ...(prev ?? [])]);
