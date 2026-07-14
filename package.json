@@ -1,0 +1,9 @@
+{
+  "name": "partner-usecase-board",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Vercel static-build wrapper: builds portal (/) + admin (/admin) into dist/",
+  "scripts": {
+    "build": "bash build.sh"
+  }
+}
