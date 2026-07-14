@@ -5,6 +5,72 @@ partners sign up by email and browse a live board, submit a structured
 expression of interest (EOI), and Databricks gets notified and compares
 responses.
 
+## 🚀 Live on Vercel + Neon (this branch)
+
+This branch (`vercel-neon-deploy`) runs the whole app on **Vercel free (Hobby)**
+tier with **Neon free** tier Postgres — no Databricks account needed.
+
+- **Live URL:** https://partner-usecase-board.vercel.app
+  - Public partner portal at `/`
+  - Admin cockpit at `/admin` (password-gated; see below)
+- **One Vercel project** serves both React SPAs (portal at `/`, admin under
+  `/admin/`) plus one FastAPI Python serverless function at `/api/*`
+  (`board_api/`, entry `api/index.py`).
+- **Neon** is plain Postgres — the function connects via a single `DATABASE_URL`
+  (Neon **pooled** connection string, `?sslmode=require` only; do **not** include
+  `channel_binding=require` — PgBouncer transaction mode rejects it).
+
+### Admin access (replaces Databricks SSO)
+
+On Vercel there is no workspace SSO, so the admin cockpit is gated by a
+**shared password** (`ADMIN_PASSWORD` env var). `POST /api/admin/login` mints a
+signed cookie and every `/api/admin/*` data route requires it (401 otherwise).
+This is fine for a pilot but weaker than SSO — rotate the password in the Vercel
+dashboard and treat it as a shared secret.
+
+### Environment variables (set in Vercel, never committed)
+
+See `.env.example`. Required: `DATABASE_URL`, `SESSION_SECRET`,
+`ADMIN_SESSION_SECRET`, `ADMIN_PASSWORD`, `ADMIN_EMAIL` (+ `COOKIE_SECURE=true`).
+
+### Free-tier notes
+
+- **Vercel Hobby is non-commercial/personal use only** per Vercel's ToS. This is
+  deployed as a personal pilot; a real/commercial deployment needs Vercel Pro.
+- **Neon free autosuspends after ~5 min idle**, so the first request after a
+  quiet spell is a few seconds slow (cold start). Normal for this tier.
+
+### Known limitations (harden before real partner data)
+
+An independent verification pass (all core security checks passed — admin routes
+are properly gated, no data/secret leaks, no SSO wall) flagged two items to
+harden before a broad rollout:
+
+- **No rate limiting on `POST /api/signup`** — anyone can create partner rows in
+  bulk (email namespace is open; no verification). Add throttling / email
+  verification before public promotion.
+- **No brute-force protection on `POST /api/admin/login`** — a short shared
+  password with no lockout. Use a strong password and add rate limiting.
+
+Neither is critical for an internal demo; both matter for production.
+
+### Deploy
+
+```bash
+npx vercel link --project partner-usecase-board --scope <team>   # once
+# set the 5 env vars: npx vercel env add <NAME> production
+npx vercel deploy --prod
+```
+
+`build.sh` builds both frontends into one `dist/` (portal at root, admin under
+`/admin/`); `vercel.json` wires the routes. Seed a fresh Neon DB with
+`db/schema.sql` then `db/seed_full.sql` (9 cases / 10 partners / 17 responses).
+
+---
+
+The rest of this README describes the original **Databricks Apps + Lakebase**
+architecture (still the reference implementation on `main`).
+
 ## Architecture — two surfaces, one Lakebase
 
 Databricks Apps **cannot be public**
