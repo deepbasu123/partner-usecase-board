@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { api, ApiError, type UseCase, type Partner } from "../api";
-import { Loading, ErrorState } from "./Chrome";
+import { TopBar, Loading, ErrorState } from "./Chrome";
 
 export function CaseDetail({ partner }: { partner: Partner | null }) {
   const { id = "" } = useParams();
@@ -16,50 +16,53 @@ export function CaseDetail({ partner }: { partner: Partner | null }) {
       .catch((e) => setError(e instanceof ApiError && e.status === 404 ? "not-found" : e.message));
   }, [id]);
 
-  if (error === "not-found")
-    return (
-      <>
-        <Link to="/" className="back-link">← Back to the board</Link>
-        <ErrorState message="This use case doesn't exist or has been closed." />
-      </>
-    );
-  if (error) return <ErrorState message={error} />;
-  if (!uc) return <Loading label="Loading use case" />;
-
   return (
     <>
-      <Link to="/" className="back-link">← Back to the board</Link>
-      <div className="detail-head">
-        <div className="tags">
-          {uc.region && <span className="tag">{uc.region}</span>}
-          {uc.industry && <span className="tag">{uc.industry}</span>}
-        </div>
-        <h1>{uc.title}</h1>
-      </div>
+      <TopBar title="Use case" sub={uc?.title} partner={partner} />
+      <main className="main">
+        <div className="main-wrap">
+          <Link to="/" className="back-link">← Back to the board</Link>
 
-      <div className="detail-grid">
-        <div className="detail-body">{uc.description}</div>
-        <div>
-          {partner ? (
-            <EoiForm caseId={uc.id} company={partner.company} />
+          {error === "not-found" ? (
+            <ErrorState message="This use case doesn't exist or has been closed." />
+          ) : error ? (
+            <ErrorState message={error} />
+          ) : !uc ? (
+            <Loading label="Loading use case" />
           ) : (
-            <div className="panel">
-              <h3 style={{ marginBottom: 10 }}>Interested?</h3>
-              <p className="muted" style={{ marginBottom: 18 }}>
-                Join the board to tell us how you&apos;d approach this. It takes one step and no
-                password.
-              </p>
-              <button
-                className="btn btn-primary"
-                onClick={() => nav("/signup")}
-                style={{ width: "100%" }}
-              >
-                Join to respond
-              </button>
-            </div>
+            <>
+              <div className="detail-head">
+                <div className="tags">
+                  <span className="pill pill-open">Open</span>
+                  {uc.region && <span className="tag">{uc.region}</span>}
+                  {uc.industry && <span className="tag">{uc.industry}</span>}
+                </div>
+                <h1>{uc.title}</h1>
+              </div>
+
+              <div className="detail-grid">
+                <div className="detail-body">{uc.description}</div>
+                <div>
+                  {partner ? (
+                    <EoiForm caseId={uc.id} company={partner.company} />
+                  ) : (
+                    <div className="card">
+                      <h3 style={{ marginBottom: 10 }}>Interested?</h3>
+                      <p className="muted" style={{ marginBottom: 18 }}>
+                        Join the board to tell us how you&apos;d approach this. It takes one step
+                        and no password.
+                      </p>
+                      <button className="btn btn-primary btn-block" onClick={() => nav("/signup")}>
+                        Join to respond
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </>
           )}
         </div>
-      </div>
+      </main>
     </>
   );
 }
@@ -89,7 +92,7 @@ function EoiForm({ caseId, company }: { caseId: string; company: string }) {
 
   if (done)
     return (
-      <div className="panel">
+      <div className="card">
         <div className="notice notice-ok" role="status">
           Thanks — your response is in.
         </div>
@@ -101,7 +104,7 @@ function EoiForm({ caseId, company }: { caseId: string; company: string }) {
     );
 
   return (
-    <form className="panel" onSubmit={submit}>
+    <form className="card" onSubmit={submit}>
       <h3 style={{ marginBottom: 6 }}>Raise your hand</h3>
       <p className="muted" style={{ marginBottom: 18, fontSize: 14 }}>
         Responding as <b>{company}</b>. Only the Databricks team sees this.
@@ -121,7 +124,11 @@ function EoiForm({ caseId, company }: { caseId: string; company: string }) {
           required
         />
       </div>
-      <button className="btn btn-primary" type="submit" disabled={busy || !approach.trim()} style={{ width: "100%" }}>
+      <button
+        className="btn btn-primary btn-block"
+        type="submit"
+        disabled={busy || !approach.trim()}
+      >
         {busy ? "Submitting…" : "Submit expression of interest"}
       </button>
     </form>

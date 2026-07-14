@@ -6,15 +6,16 @@ function excerpt(text: string, n = 150) {
 }
 
 export function UseCaseCard({ uc }: { uc: UseCase }) {
+  const meta = [uc.region, uc.industry].filter(Boolean).join(" · ");
   return (
-    <Link to={`/case/${uc.id}`} className="card">
+    <Link to={`/case/${uc.id}`} className="uc-card">
       <div className="tags">
-        {uc.region && <span className="tag">{uc.region}</span>}
-        {uc.industry && <span className="tag">{uc.industry}</span>}
+        <span className="pill pill-open">Open</span>
       </div>
       <h3>{uc.title}</h3>
+      {meta && <div className="meta">{meta}</div>}
       <p className="excerpt">{excerpt(uc.description)}</p>
-      <div className="card-foot">
+      <div className="foot">
         <span className="respond-hint">View &amp; respond</span>
       </div>
     </Link>

@@ -12,7 +12,7 @@ tier with **Neon free** tier Postgres — no Databricks account needed.
 
 - **Live URL:** https://partner-usecase-board.vercel.app
   - Public partner portal at `/`
-  - Admin cockpit at `/admin` (password-gated; see below)
+  - Admin portal at `/admin` (password-gated; see below)
 - **One Vercel project** serves both React SPAs (portal at `/`, admin under
   `/admin/`) plus one FastAPI Python serverless function at `/api/*`
   (`board_api/`, entry `api/index.py`).
@@ -22,7 +22,7 @@ tier with **Neon free** tier Postgres — no Databricks account needed.
 
 ### Admin access (replaces Databricks SSO)
 
-On Vercel there is no workspace SSO, so the admin cockpit is gated by a
+On Vercel there is no workspace SSO, so the admin portal is gated by a
 **shared password** (`ADMIN_PASSWORD` env var). `POST /api/admin/login` mints a
 signed cookie and every `/api/admin/*` data route requires it (401 otherwise).
 This is fine for a pilot but weaker than SSO — rotate the password in the Vercel
