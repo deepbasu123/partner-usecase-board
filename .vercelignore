@@ -1,0 +1,15 @@
+# Keep the deployment bundle lean. The Python function needs only api/ +
+# board_api/; the build needs the two frontends. Everything else is excluded.
+admin-app/backend
+portal_backend
+common
+deploy
+docs
+board_api/tests
+*.png
+*.md
+.venv
+.pytest_cache
+__pycache__
+run_tests.sh
+run_local.sh

@@ -8,3 +8,5 @@ static/
 *.log
 *.png
 *.tsbuildinfo
+.env
+.vercel
