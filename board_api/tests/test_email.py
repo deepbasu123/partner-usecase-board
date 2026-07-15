@@ -22,7 +22,8 @@ def _fake_resp(status=200, body=b'{"id":"re_123"}'):
 
 def test_send_posts_to_resend_with_auth_and_payload(monkeypatch):
     monkeypatch.setenv("RESEND_API_KEY", "re_test_key")
-    monkeypatch.setenv("EMAIL_FROM", "onboarding@resend.dev")
+    # Note: FROM_ADDR is bound at import, so we assert the payload's "from"
+    # against the actual constant rather than a runtime EMAIL_FROM override.
     captured = {}
 
     def fake_urlopen(req, timeout=None):
@@ -42,11 +43,12 @@ def test_send_posts_to_resend_with_auth_and_payload(monkeypatch):
     assert captured["auth"] == "Bearer re_test_key"
     assert captured["ctype"] == "application/json"
     assert captured["body"] == {
-        "from": "onboarding@resend.dev",
+        "from": email.FROM_ADDR,
         "to": ["me@databricks.com"],
         "subject": "Hi",
         "text": "Body text",
     }
+    assert email.FROM_ADDR == "onboarding@resend.dev"
     assert captured["ua"] == "partner-board/1.0"
 
 

@@ -8,15 +8,15 @@ CANONICAL COPY. This file lives in common/ and is copied verbatim into each
 backend package (portal_backend/email.py, admin-app/backend/email.py) so each
 can `from . import email`. Edit here, then re-copy.
 
-The concrete transport (_send) is chosen during the Task 0 spike (Gmail API or
-an SMTP relay) and wired in only after explicit approval to send external mail.
-Until then _send raises NotImplementedError; callers still succeed because
-_safe() swallows it, and tests mock _send.
+Transport is Resend's REST API (POST /emails), called via stdlib urllib so no
+extra dependency is needed. A missing key or non-2xx raises inside _send; _safe()
+logs and swallows it so a mail failure never breaks the triggering request. The
+from-address is Resend's shared onboarding@resend.dev (no verified domain yet),
+which limits delivery to the Resend account-owner address for now.
 """
 import json
 import logging
 import os
-import urllib.error
 import urllib.request
 
 log = logging.getLogger("board.email")
@@ -48,7 +48,9 @@ def _send(to: list[str], subject: str, body: str) -> None:
                  "Content-Type": "application/json",
                  "User-Agent": "partner-board/1.0"},
     )
-    with urllib.request.urlopen(req, timeout=10):
+    # Timeout well under a typical serverless function budget so a hung Resend
+    # call can't cascade into a platform-level 504 on the triggering request.
+    with urllib.request.urlopen(req, timeout=5):
         pass
 
 

@@ -45,6 +45,12 @@ def create_case(body: UseCaseIn):
     uc = db.create_use_case(body.title, body.description, body.industry,
                             body.region, ADMIN_EMAIL)
     # Notify every registered partner about the new opportunity.
+    # WARNING: these recipients currently land in the visible `to` field (see
+    # email._send). That's harmless only while Resend has no verified domain
+    # (delivery is limited to the account owner). BEFORE verifying a sending
+    # domain, move this fan-out to `bcc` (single `to` = sender) or send one
+    # message per recipient — otherwise every partner sees every other
+    # partner's email address.
     recipients = [p["email"] for p in db.list_all_partners()]
     if recipients:
         email.send_new_use_case(recipients, uc["title"], uc["description"], BOARD_URL)
