@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, useNavigate, useLocation } from "react-router-dom";
 import { useAuth, useUser } from "@clerk/react";
 import { makeApi, type Partner } from "./api";
 import { Rail } from "./components/Chrome";
@@ -11,6 +11,8 @@ import { CaseDetail } from "./components/CaseDetail";
 export default function App() {
   const { getToken, isSignedIn } = useAuth();
   const { isLoaded } = useUser();
+  const navigate = useNavigate();
+  const { pathname } = useLocation();
   const [partner, setPartner] = useState<Partner | null>(null);
   const [needsOnboarding, setNeedsOnboarding] = useState(false);
 
@@ -19,6 +21,7 @@ export default function App() {
   useEffect(() => {
     if (!isLoaded || !isSignedIn) {
       setPartner(null);
+      setNeedsOnboarding(false);
       return;
     }
     api()
@@ -31,8 +34,20 @@ export default function App() {
           setPartner(m);
           setNeedsOnboarding(false);
         }
+      })
+      .catch(() => {
+        // Transient backend error — leave state as-is rather than flipping a
+        // signed-in partner to a signed-out view; the board is public anyway.
       });
   }, [isLoaded, isSignedIn, api]);
+
+  // Route a signed-in partner with no profile to onboarding (client-side nav,
+  // not a full-page reload, and only as an effect — never during render).
+  useEffect(() => {
+    if (needsOnboarding && pathname !== "/onboarding") {
+      navigate("/onboarding");
+    }
+  }, [needsOnboarding, pathname, navigate]);
 
   return (
     <div className="app">
@@ -56,9 +71,6 @@ export default function App() {
           <Route path="/case/:id" element={<CaseDetail partner={partner} api={api} />} />
         </Routes>
       </div>
-      {needsOnboarding &&
-        window.location.pathname !== "/onboarding" &&
-        (window.location.href = "/onboarding")}
     </div>
   );
 }
