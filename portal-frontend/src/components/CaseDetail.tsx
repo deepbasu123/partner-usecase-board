@@ -1,27 +1,31 @@
 import { useEffect, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { api, ApiError, type UseCase, type Partner } from "../api";
+import { ApiError, type Api, type UseCase, type Partner } from "../api";
 import { TopBar, Loading, ErrorState } from "./Chrome";
 
-export function CaseDetail({ partner }: { partner: Partner | null }) {
+export function CaseDetail({ partner, api }: { partner: Partner | null; api: () => Api }) {
   const { id = "" } = useParams();
   const nav = useNavigate();
   const [uc, setUc] = useState<UseCase | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    api
+    api()
       .getCase(id)
       .then(setUc)
-      .catch((e) => setError(e instanceof ApiError && e.status === 404 ? "not-found" : e.message));
-  }, [id]);
+      .catch((e) =>
+        setError(e instanceof ApiError && e.status === 404 ? "not-found" : e.message),
+      );
+  }, [id, api]);
 
   return (
     <>
       <TopBar title="Use case" sub={uc?.title} partner={partner} />
       <main className="main">
         <div className="main-wrap">
-          <Link to="/" className="back-link">← Back to the board</Link>
+          <Link to="/" className="back-link">
+            ← Back to the board
+          </Link>
 
           {error === "not-found" ? (
             <ErrorState message="This use case doesn't exist or has been closed." />
@@ -44,7 +48,7 @@ export function CaseDetail({ partner }: { partner: Partner | null }) {
                 <div className="detail-body">{uc.description}</div>
                 <div>
                   {partner ? (
-                    <EoiForm caseId={uc.id} company={partner.company} />
+                    <EoiForm caseId={uc.id} company={partner.company} api={api} />
                   ) : (
                     <div className="card">
                       <h3 style={{ marginBottom: 10 }}>Interested?</h3>
@@ -52,8 +56,11 @@ export function CaseDetail({ partner }: { partner: Partner | null }) {
                         Join the board to tell us how you&apos;d approach this. It takes one step
                         and no password.
                       </p>
-                      <button className="btn btn-primary btn-block" onClick={() => nav("/signup")}>
-                        Join to respond
+                      <button
+                        className="btn btn-primary btn-block"
+                        onClick={() => nav("/signin")}
+                      >
+                        Sign in to respond
                       </button>
                     </div>
                   )}
@@ -67,7 +74,15 @@ export function CaseDetail({ partner }: { partner: Partner | null }) {
   );
 }
 
-function EoiForm({ caseId, company }: { caseId: string; company: string }) {
+function EoiForm({
+  caseId,
+  company,
+  api,
+}: {
+  caseId: string;
+  company: string;
+  api: () => Api;
+}) {
   const [approach, setApproach] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -78,7 +93,7 @@ function EoiForm({ caseId, company }: { caseId: string; company: string }) {
     setError(null);
     setBusy(true);
     try {
-      await api.respond(caseId, approach.trim());
+      await api().respond(caseId, approach.trim());
       setDone(true);
     } catch (err) {
       if (err instanceof ApiError && err.status === 409) {

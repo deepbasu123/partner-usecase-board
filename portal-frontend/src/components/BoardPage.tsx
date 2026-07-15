@@ -1,19 +1,19 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { api, type Partner, type UseCase } from "../api";
+import type { Api, Partner, UseCase } from "../api";
 import { UseCaseCard } from "./UseCaseCard";
 import { TopBar, Loading, EmptyState, ErrorState, DatabricksLogo, BriefcaseIcon } from "./Chrome";
 
-export function BoardPage({ partner }: { partner: Partner | null }) {
+export function BoardPage({ partner, api }: { partner: Partner | null; api: () => Api }) {
   const [cases, setCases] = useState<UseCase[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    api
+    api()
       .listCases()
       .then(setCases)
       .catch((e) => setError(e.message ?? "Could not load the board"));
-  }, []);
+  }, [api]);
 
   const count = cases?.length ?? 0;
   const signedIn = !!partner;
@@ -36,21 +36,27 @@ export function BoardPage({ partner }: { partner: Partner | null }) {
             <div className="chooser-cards">
               {/* /admin is a separate SPA at its own base path → full navigation. */}
               <a className="path-card" href="/admin">
-                <span className="path-icon dbx" aria-hidden><DatabricksLogo /></span>
+                <span className="path-icon dbx" aria-hidden>
+                  <DatabricksLogo />
+                </span>
                 <h3>Databricks user</h3>
                 <p>Post opportunities and review the partners who raise their hand.</p>
                 <span className="path-cta">Go to the admin portal</span>
               </a>
 
-              <Link className="path-card" to={signedIn ? "/" : "/signup"}>
-                <span className="path-icon partner" aria-hidden><BriefcaseIcon /></span>
+              <Link className="path-card" to={signedIn ? "/" : "/signin"}>
+                <span className="path-icon partner" aria-hidden>
+                  <BriefcaseIcon />
+                </span>
                 <h3>Partner</h3>
                 <p>
                   {signedIn
                     ? "You're signed in — browse the open briefs below and raise your hand."
-                    : "Sign up with your email, then browse open briefs and raise your hand."}
+                    : "Sign in with your email, then browse open briefs and raise your hand."}
                 </p>
-                <span className="path-cta">{signedIn ? "Browse the board" : "Join as a partner"}</span>
+                <span className="path-cta">
+                  {signedIn ? "Browse the board" : "Sign in as a partner"}
+                </span>
               </Link>
             </div>
           </section>

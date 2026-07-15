@@ -1,4 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
+import { Show, UserButton } from "@clerk/react";
 import type { Partner } from "../api";
 
 /** Official Databricks symbol mark (from databricks.com nav logo SVG). */
@@ -55,7 +56,7 @@ function AdminIcon() {
 export function Rail({ partner }: { partner: Partner | null }) {
   const { pathname } = useLocation();
   const onBoard = pathname === "/" || pathname.startsWith("/case");
-  const onJoin = pathname.startsWith("/signup");
+  const onJoin = pathname.startsWith("/signin");
   return (
     <nav className="rail">
       <Link to="/" className="logo">
@@ -67,11 +68,16 @@ export function Rail({ partner }: { partner: Partner | null }) {
       <Link to="/" className={`navitem ${onBoard ? "active" : ""}`}>
         <BoardIcon /> Open use cases
       </Link>
-      {!partner && (
-        <Link to="/signup" className={`navitem ${onJoin ? "active" : ""}`}>
-          <JoinIcon /> Join as a partner
+      <Show when="signed-out">
+        <Link to="/signin" className={`navitem ${onJoin ? "active" : ""}`}>
+          <JoinIcon /> Sign in as a partner
         </Link>
-      )}
+      </Show>
+      <Show when="signed-in">
+        <div className="navitem">
+          <UserButton /> {partner?.company ?? "Account"}
+        </div>
+      </Show>
 
       <div className="navlabel">Databricks team</div>
       {/* /admin is a separate SPA at its own base path → full navigation. */}
