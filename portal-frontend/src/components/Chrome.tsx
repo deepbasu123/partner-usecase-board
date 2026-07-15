@@ -96,9 +96,13 @@ export function TopBar({
 }) {
   return (
     <header className="topbar">
-      <div>
-        <h1>{title}</h1>
-        {sub && <div className="sub">{sub}</div>}
+      <div className="topbar-lead">
+        <DatabricksLogo />
+        <span className="topbar-sep" aria-hidden />
+        <div>
+          <h1>{title}</h1>
+          {sub && <div className="sub">{sub}</div>}
+        </div>
       </div>
       {partner && (
         <div className="who-chip" title={partner.email}>
