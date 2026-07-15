@@ -1,49 +1,35 @@
-"""Public portal routes: signup, session check, board listing, EOI submission.
+"""Public portal routes: identity check, onboarding, board listing, EOI submission.
 
-Merges the former portal_backend routes_partners + routes_board +
-routes_responses. No auth beyond the passwordless signed-cookie session.
+Auth is gated on Clerk Bearer-token identity (require_identity dependency).
+No cookies, no sessions module. Admin auth is separate (routes_admin.py).
 """
 import os
+from fastapi import APIRouter, HTTPException, Depends
 
-from fastapi import APIRouter, Request, Response, HTTPException
-
-from . import db, email, sessions
-from .models import SignupIn, EoiIn
+from . import db, email
+from .clerk_auth import require_identity
+from .models import OnboardingIn, EoiIn
 
 router = APIRouter()
-
-# 30-day session cookie.
-_MAX_AGE = 60 * 60 * 24 * 30
-# Secure cookies require https. On by default (production); set
-# COOKIE_SECURE=false only for local http testing directly against the backend.
-_COOKIE_SECURE = os.environ.get("COOKIE_SECURE", "true").lower() != "false"
 
 # Comma-separated shared address(es) that also get notified on each EOI.
 _NOTIFY = [e.strip() for e in os.environ.get("EOI_NOTIFY_EMAILS", "").split(",") if e.strip()]
 
 
-# ── signup + session ─────────────────────────────────────────────────────────
+# ── identity + onboarding ─────────────────────────────────────────────────────
 
-@router.post("/api/signup")
-def signup(body: SignupIn, response: Response):
-    partner = db.get_or_create_partner(str(body.email), body.company, body.contact_name)
-    response.set_cookie(
-        sessions.SESSION_COOKIE_NAME,
-        sessions.make_session_cookie(partner["id"]),
-        httponly=True, secure=_COOKIE_SECURE, samesite="lax", max_age=_MAX_AGE,
-    )
-    email.send_welcome(partner["email"], partner["company"])
+@router.get("/api/me")
+def me(identity: dict = Depends(require_identity)):
+    partner = db.get_partner_by_email(identity["email"])
+    if not partner:
+        return {"onboarding_required": True}
     return {"id": partner["id"], "email": partner["email"], "company": partner["company"]}
 
 
-@router.get("/api/me")
-def me(request: Request):
-    pid = sessions.read_session_cookie(request.cookies.get(sessions.SESSION_COOKIE_NAME, ""))
-    if not pid:
-        raise HTTPException(401, "not signed in")
-    partner = db.get_partner(pid)
-    if not partner:
-        raise HTTPException(401, "session no longer valid")
+@router.post("/api/onboarding", status_code=201)
+def onboarding(body: OnboardingIn, identity: dict = Depends(require_identity)):
+    partner = db.link_or_create_partner(identity["email"], identity["clerk_user_id"], body.company)
+    email.send_welcome(partner["email"], partner["company"])
     return {"id": partner["id"], "email": partner["email"], "company": partner["company"]}
 
 
@@ -67,10 +53,10 @@ def get_case(uc_id: str):
 # ── expression of interest ───────────────────────────────────────────────────
 
 @router.post("/api/use-cases/{uc_id}/responses", status_code=201)
-def respond(uc_id: str, body: EoiIn, request: Request):
-    pid = sessions.read_session_cookie(request.cookies.get(sessions.SESSION_COOKIE_NAME, ""))
-    if not pid:
-        raise HTTPException(401, "sign up first")
+def respond(uc_id: str, body: EoiIn, identity: dict = Depends(require_identity)):
+    partner = db.get_partner_by_email(identity["email"])
+    if not partner:
+        raise HTTPException(401, "complete onboarding first")
 
     uc = db.get_use_case(uc_id)
     if not uc:
@@ -79,18 +65,14 @@ def respond(uc_id: str, body: EoiIn, request: Request):
         raise HTTPException(409, "this use case is closed")
 
     try:
-        response_row = db.create_response(uc_id, pid, body.approach)
+        response_row = db.create_response(uc_id, partner["id"], body.approach)
     except db.DuplicateResponse:
         raise HTTPException(409, "you've already responded to this use case")
 
-    # Notify the poster plus any shared list. Look up the partner's company for
-    # the email body; fall back gracefully if not found.
-    partner = db.get_partner(pid) or {"company": "A partner"}
     recipients = list(_NOTIFY)
     poster = uc.get("posted_by") or os.environ.get("EMAIL_FROM")
     if poster and poster not in recipients:
         recipients.append(poster)
     if recipients:
         email.send_new_eoi(recipients, partner["company"], uc["title"], body.approach)
-
     return response_row

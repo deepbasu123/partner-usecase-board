@@ -106,6 +106,13 @@ def get_partner(partner_id):
         return cur.fetchone()
 
 
+def get_partner_by_email(email):
+    with get_conn() as c, c.cursor() as cur:
+        cur.execute("SELECT id, email, company, contact_name, created_at "
+                    "FROM partners WHERE email = %s", (email,))
+        return cur.fetchone()
+
+
 def list_all_partners():
     with get_conn() as c, c.cursor() as cur:
         cur.execute("SELECT id, email, company, contact_name, created_at "

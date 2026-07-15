@@ -48,3 +48,14 @@ class StatusIn(BaseModel):
 
 class AdminLoginIn(BaseModel):
     password: str
+
+
+class OnboardingIn(BaseModel):
+    company: str
+
+    @field_validator("company")
+    @classmethod
+    def company_not_blank(cls, v: str) -> str:
+        if not v or not v.strip():
+            raise ValueError("company is required")
+        return v.strip()
