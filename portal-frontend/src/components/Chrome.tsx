@@ -80,9 +80,6 @@ export function Rail({ partner }: { partner: Partner | null }) {
       </a>
 
       <div className="spacer" />
-      <div className="rail-foot">
-        Databricks posts use cases; GT partners raise their hand.
-      </div>
     </nav>
   );
 }

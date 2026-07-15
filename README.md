@@ -10,7 +10,7 @@ responses.
 This branch (`vercel-neon-deploy`) runs the whole app on **Vercel free (Hobby)**
 tier with **Neon free** tier Postgres — no Databricks account needed.
 
-- **Live URL:** https://partner-usecase-board.vercel.app
+- **Live URL:** https://databricks-gt-partner.vercel.app
   - Public partner portal at `/`
   - Admin portal at `/admin` (password-gated; see below)
 - **One Vercel project** serves both React SPAs (portal at `/`, admin under

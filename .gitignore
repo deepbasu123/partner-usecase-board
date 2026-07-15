@@ -10,3 +10,4 @@ static/
 *.tsbuildinfo
 .env
 .vercel
+.env*
