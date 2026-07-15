@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS partners (
     email        text NOT NULL UNIQUE,
     company      text NOT NULL,
     contact_name text,
+    clerk_user_id text UNIQUE,
     verified     boolean NOT NULL DEFAULT true,
     created_at   timestamptz NOT NULL DEFAULT now()
 );

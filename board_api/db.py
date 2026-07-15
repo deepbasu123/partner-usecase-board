@@ -65,6 +65,26 @@ def get_or_create_partner(email, company, contact_name):
         return cur.fetchone()
 
 
+def link_or_create_partner(email, clerk_user_id, company):
+    """Link a Clerk identity to a partner by email, or create the row.
+
+    On email conflict (e.g. a seeded partner signing in for the first time), keep
+    the existing id/responses and stamp clerk_user_id; fill company only if the
+    existing value is blank so we never clobber a real one with an onboarding entry.
+    """
+    with get_conn() as c, c.cursor() as cur:
+        cur.execute(
+            "INSERT INTO partners (email, company, clerk_user_id) "
+            "VALUES (%s, %s, %s) "
+            "ON CONFLICT (email) DO UPDATE SET "
+            "  clerk_user_id = EXCLUDED.clerk_user_id, "
+            "  company = CASE WHEN partners.company IS NULL OR partners.company = '' "
+            "                 THEN EXCLUDED.company ELSE partners.company END "
+            "RETURNING id, email, company, contact_name, created_at",
+            (email, company, clerk_user_id))
+        return cur.fetchone()
+
+
 def create_response(use_case_id, partner_id, approach):
     try:
         with get_conn() as c, c.cursor() as cur:
