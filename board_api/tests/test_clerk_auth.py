@@ -1,6 +1,7 @@
 """clerk_auth tests: mint a local RS256 JWT, inject the public key as the
 'signing key', and assert verify_token + require_identity behave. No network,
 no real Clerk."""
+import time
 import jwt
 import pytest
 from cryptography.hazmat.primitives.asymmetric import rsa
@@ -13,6 +14,7 @@ _KEY = rsa.generate_private_key(public_exponent=65537, key_size=2048)
 
 
 def _make_token(claims):
+    claims = {"exp": int(time.time()) + 3600, **claims}
     return jwt.encode(claims, _KEY, algorithm="RS256")
 
 
@@ -56,6 +58,13 @@ def test_require_identity_401_on_garbage_token():
 
 def test_require_identity_401_when_email_claim_missing():
     tok = _make_token({"sub": "user_123"})  # no email → cannot link partner
+    with pytest.raises(HTTPException) as e:
+        clerk_auth.require_identity(_request_with(f"Bearer {tok}"))
+    assert e.value.status_code == 401
+
+
+def test_require_identity_401_when_sub_claim_missing():
+    tok = _make_token({"email": "a@x.com"})  # no sub → cannot form clerk_user_id
     with pytest.raises(HTTPException) as e:
         clerk_auth.require_identity(_request_with(f"Bearer {tok}"))
     assert e.value.status_code == 401

@@ -13,15 +13,12 @@ from fastapi import Request, HTTPException
 _JWKS_URL = os.environ.get("CLERK_JWKS_URL", "")
 _ISSUER = os.environ.get("CLERK_ISSUER") or None
 
-_jwks_client = None
+_jwks_client = PyJWKClient(_JWKS_URL) if _JWKS_URL else None
 
 
 def _client() -> PyJWKClient:
-    global _jwks_client
     if _jwks_client is None:
-        if not _JWKS_URL:
-            raise RuntimeError("CLERK_JWKS_URL not set")
-        _jwks_client = PyJWKClient(_JWKS_URL)  # caches keys internally
+        raise RuntimeError("CLERK_JWKS_URL not set")
     return _jwks_client
 
 
@@ -43,7 +40,10 @@ def _bearer(request: Request) -> str:
     auth = request.headers.get("Authorization", "")
     if not auth.startswith("Bearer "):
         raise HTTPException(401, "missing bearer token")
-    return auth[len("Bearer "):]
+    token = auth[len("Bearer "):]
+    if not token:
+        raise HTTPException(401, "missing bearer token")
+    return token
 
 
 def require_identity(request: Request) -> dict:
