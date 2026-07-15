@@ -37,7 +37,7 @@ def _send(to: list[str], subject: str, body: str) -> None:
     if not key:
         raise RuntimeError("RESEND_API_KEY not set")
     payload = json.dumps({
-        "from": os.environ.get("EMAIL_FROM", FROM_ADDR),
+        "from": FROM_ADDR,
         "to": to,
         "subject": subject,
         "text": body,
@@ -47,9 +47,8 @@ def _send(to: list[str], subject: str, body: str) -> None:
         headers={"Authorization": f"Bearer {key}",
                  "Content-Type": "application/json"},
     )
-    with urllib.request.urlopen(req, timeout=10) as resp:
-        if not (200 <= resp.status < 300):
-            raise RuntimeError(f"Resend returned {resp.status}")
+    with urllib.request.urlopen(req, timeout=10):
+        pass
 
 
 def _safe(to: list[str], subject: str, body: str) -> None:

@@ -56,10 +56,11 @@ def test_send_raises_without_api_key(monkeypatch):
 
 def test_send_raises_on_non_2xx(monkeypatch):
     monkeypatch.setenv("RESEND_API_KEY", "re_test_key")
+    import urllib.error
     with patch("board_api.email.urllib.request.urlopen",
                side_effect=__import__("urllib").error.HTTPError(
                    "https://api.resend.com/emails", 422, "Unprocessable", {}, None)):
-        with pytest.raises(Exception):
+        with pytest.raises(urllib.error.HTTPError):
             email._send(["me@databricks.com"], "Hi", "Body")
 
 
