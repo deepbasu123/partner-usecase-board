@@ -116,6 +116,14 @@ def test_response_requires_token(client):
     assert r.status_code == 401
 
 
+def test_response_401_when_no_partner_profile(client):
+    _auth("new@x.com", "user_1")
+    with patch("board_api.routes_public.db.get_partner_by_email", return_value=None):
+        r = client.post("/api/use-cases/uc1/responses", json={"approach": "x"})
+    _noauth()
+    assert r.status_code == 401
+
+
 def test_response_created_201(client):
     _auth("a@x.com", "user_1")
     with patch("board_api.routes_public.db.get_use_case",
@@ -130,6 +138,7 @@ def test_response_created_201(client):
         r = client.post("/api/use-cases/uc1/responses", json={"approach": "x"})
     _noauth()
     assert r.status_code == 201
+    assert r.json()["id"] == "r1"
 
 
 def test_duplicate_response_returns_409(client):
