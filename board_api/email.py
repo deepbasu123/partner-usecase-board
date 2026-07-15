@@ -45,7 +45,8 @@ def _send(to: list[str], subject: str, body: str) -> None:
     req = urllib.request.Request(
         RESEND_ENDPOINT, data=payload, method="POST",
         headers={"Authorization": f"Bearer {key}",
-                 "Content-Type": "application/json"},
+                 "Content-Type": "application/json",
+                 "User-Agent": "partner-board/1.0"},
     )
     with urllib.request.urlopen(req, timeout=10):
         pass

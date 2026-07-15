@@ -30,6 +30,7 @@ def test_send_posts_to_resend_with_auth_and_payload(monkeypatch):
         captured["method"] = req.get_method()
         captured["auth"] = req.get_header("Authorization")
         captured["ctype"] = req.get_header("Content-type")
+        captured["ua"] = req.get_header("User-agent")
         captured["body"] = json.loads(req.data.decode())
         return _fake_resp()
 
@@ -46,6 +47,7 @@ def test_send_posts_to_resend_with_auth_and_payload(monkeypatch):
         "subject": "Hi",
         "text": "Body text",
     }
+    assert captured["ua"] == "partner-board/1.0"
 
 
 def test_send_raises_without_api_key(monkeypatch):
