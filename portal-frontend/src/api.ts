@@ -1,6 +1,5 @@
 // Typed client for the portal backend. Same-origin in prod (SPA served by
-// FastAPI); dev uses Vite's proxy. credentials:"include" carries the session
-// cookie set at signup.
+// FastAPI); dev uses Vite's proxy. Auth is via Clerk Bearer token.
 const BASE = import.meta.env.VITE_API_BASE ?? "";
 
 export type UseCase = {
@@ -14,6 +13,7 @@ export type UseCase = {
 };
 
 export type Partner = { id: string; email: string; company: string };
+export type Me = Partner | { onboarding_required: true };
 
 class ApiError extends Error {
   status: number;
@@ -26,39 +26,37 @@ class ApiError extends Error {
 async function json<T>(r: Response): Promise<T> {
   if (!r.ok) {
     const detail = await r.json().catch(() => ({ detail: r.statusText }));
-    throw new ApiError(r.status, detail.detail ?? r.statusText);
+    throw new ApiError(r.status, (detail as { detail?: string }).detail ?? r.statusText);
   }
   return r.json() as Promise<T>;
 }
 
-const opts = (method: string, body?: unknown): RequestInit => ({
-  method,
-  credentials: "include",
-  headers: body ? { "content-type": "application/json" } : undefined,
-  body: body ? JSON.stringify(body) : undefined,
-});
-
-export const api = {
-  signup: (email: string, company: string, contact_name?: string) =>
-    fetch(`${BASE}/api/signup`, opts("POST", { email, company, contact_name })).then(
-      json<Partner>,
-    ),
-
-  me: async (): Promise<Partner | null> => {
-    const r = await fetch(`${BASE}/api/me`, { credentials: "include" });
-    return r.ok ? ((await r.json()) as Partner) : null;
-  },
-
-  listCases: () =>
-    fetch(`${BASE}/api/use-cases`, { credentials: "include" }).then(json<UseCase[]>),
-
-  getCase: (id: string) =>
-    fetch(`${BASE}/api/use-cases/${id}`, { credentials: "include" }).then(json<UseCase>),
-
-  respond: (id: string, approach: string) =>
-    fetch(`${BASE}/api/use-cases/${id}/responses`, opts("POST", { approach })).then(
-      json<{ id: string }>,
-    ),
-};
-
+// getToken comes from Clerk's useAuth(); null token => no auth header (public reads).
+export function makeApi(getToken: () => Promise<string | null>) {
+  const auth = async (): Promise<HeadersInit> => {
+    const t = await getToken();
+    return t ? { Authorization: `Bearer ${t}` } : {};
+  };
+  return {
+    me: async (): Promise<Me | null> => {
+      const r = await fetch(`${BASE}/api/me`, { headers: await auth() });
+      return r.ok ? ((await r.json()) as Me) : null;
+    },
+    onboarding: async (company: string) =>
+      fetch(`${BASE}/api/onboarding`, {
+        method: "POST",
+        headers: { "content-type": "application/json", ...(await auth()) },
+        body: JSON.stringify({ company }),
+      }).then(json<Partner>),
+    listCases: () => fetch(`${BASE}/api/use-cases`).then(json<UseCase[]>),
+    getCase: (id: string) => fetch(`${BASE}/api/use-cases/${id}`).then(json<UseCase>),
+    respond: async (id: string, approach: string) =>
+      fetch(`${BASE}/api/use-cases/${id}/responses`, {
+        method: "POST",
+        headers: { "content-type": "application/json", ...(await auth()) },
+        body: JSON.stringify({ approach }),
+      }).then(json<{ id: string }>),
+  };
+}
+export type Api = ReturnType<typeof makeApi>;
 export { ApiError };
