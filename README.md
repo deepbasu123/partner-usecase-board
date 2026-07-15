@@ -33,6 +33,10 @@ dashboard and treat it as a shared secret.
 See `.env.example`. Required: `DATABASE_URL`, `SESSION_SECRET`,
 `ADMIN_SESSION_SECRET`, `ADMIN_PASSWORD`, `ADMIN_EMAIL` (+ `COOKIE_SECURE=true`).
 
+- **Email (Resend):** notifications send via Resend from `onboarding@resend.dev`.
+  Set `RESEND_API_KEY` in the environment. With no verified domain, Resend only
+  reliably delivers to the Resend account-owner address (pilot limitation).
+
 ### Free-tier notes
 
 - **Vercel Hobby is non-commercial/personal use only** per Vercel's ToS. This is
