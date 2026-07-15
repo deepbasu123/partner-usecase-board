@@ -13,20 +13,43 @@ an SMTP relay) and wired in only after explicit approval to send external mail.
 Until then _send raises NotImplementedError; callers still succeed because
 _safe() swallows it, and tests mock _send.
 """
+import json
 import logging
 import os
+import urllib.error
+import urllib.request
 
 log = logging.getLogger("board.email")
 
-FROM_ADDR = os.environ.get("EMAIL_FROM", "partner-board@example.com")
+FROM_ADDR = os.environ.get("EMAIL_FROM", "onboarding@resend.dev")
+
+
+RESEND_ENDPOINT = "https://api.resend.com/emails"
 
 
 def _send(to: list[str], subject: str, body: str) -> None:
-    """Actually deliver the message. Wired in after the Task 0 email decision.
+    """Deliver via Resend's REST API using stdlib urllib (no extra dep).
 
-    Keep this signature stable — send_* and the tests depend on it.
+    Raises on missing key or non-2xx so _safe() logs and swallows it. Keep this
+    signature stable — send_* and the tests depend on it.
     """
-    raise NotImplementedError("email transport not wired yet (see Task 0)")
+    key = os.environ.get("RESEND_API_KEY")
+    if not key:
+        raise RuntimeError("RESEND_API_KEY not set")
+    payload = json.dumps({
+        "from": os.environ.get("EMAIL_FROM", FROM_ADDR),
+        "to": to,
+        "subject": subject,
+        "text": body,
+    }).encode()
+    req = urllib.request.Request(
+        RESEND_ENDPOINT, data=payload, method="POST",
+        headers={"Authorization": f"Bearer {key}",
+                 "Content-Type": "application/json"},
+    )
+    with urllib.request.urlopen(req, timeout=10) as resp:
+        if not (200 <= resp.status < 300):
+            raise RuntimeError(f"Resend returned {resp.status}")
 
 
 def _safe(to: list[str], subject: str, body: str) -> None:
