@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { api, ApiError, type AdminCase, type AdminPartner } from "./api";
+import { useAuth, useUser } from "@clerk/react";
+import { api, setAdminTokenGetter, ApiError, type AdminCase, type AdminPartner } from "./api";
 import { CreateCaseForm } from "./components/CreateCaseForm";
 import { CaseRow } from "./components/CaseRow";
 import { AdminLogin } from "./components/AdminLogin";
@@ -15,6 +16,10 @@ function initials(email: string) {
 }
 
 export default function App() {
+  const { getToken } = useAuth();
+  const { isLoaded: clerkLoaded } = useUser();
+  setAdminTokenGetter(() => getToken());  // idempotent; safe to call each render
+
   const [authed, setAuthed] = useState<Auth>(null);
   const [who, setWho] = useState<string>("");
   const [tab, setTab] = useState<Tab>("cases");
@@ -26,8 +31,9 @@ export default function App() {
     if (err instanceof ApiError && err.status === 401) setAuthed(false);
   }
 
-  // Probe the session: whoami succeeds only with a valid admin cookie. Run on
-  // mount and again right after a successful login.
+  // Probe the session: whoami succeeds with a valid admin cookie OR a
+  // @databricks.com Clerk Bearer token. Run once Clerk is loaded (so the token
+  // is available) and again right after a successful password login.
   function probe() {
     setAuthed(null);
     api.whoami()
@@ -38,7 +44,7 @@ export default function App() {
       });
   }
 
-  useEffect(() => { probe(); }, []);
+  useEffect(() => { if (clerkLoaded) probe(); }, [clerkLoaded]);
 
   // Load cases once authenticated.
   useEffect(() => {

@@ -49,7 +49,20 @@ async function json<T>(r: Response): Promise<T> {
   return r.json() as Promise<T>;
 }
 
-const cred: RequestInit = { credentials: "include" };
+// A Clerk token getter, wired up once by App.tsx. Until set, calls are
+// password-cookie only (existing behavior). When set, calls also send a Bearer
+// token so a @databricks.com Clerk session authenticates without the password.
+let _getToken: (() => Promise<string | null>) | null = null;
+export function setAdminTokenGetter(fn: () => Promise<string | null>) {
+  _getToken = fn;
+}
+
+async function authInit(init: RequestInit = {}): Promise<RequestInit> {
+  const headers = new Headers(init.headers);
+  const t = _getToken ? await _getToken() : null;
+  if (t) headers.set("Authorization", `Bearer ${t}`);
+  return { ...init, credentials: "include", headers };
+}
 
 export const api = {
   login: (password: string) =>
@@ -58,38 +71,36 @@ export const api = {
       credentials: "include",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ password }),
-    }).then(json<{ ok: boolean }>),
+    }).then(json<{ ok: boolean }>),  // login stays as-is (no token needed)
 
-  whoami: () =>
-    fetch(`${BASE}/api/admin/whoami`, cred).then(json<{ email: string }>),
+  whoami: async () =>
+    fetch(`${BASE}/api/admin/whoami`, await authInit()).then(json<{ email: string }>),
 
-  listCases: () =>
-    fetch(`${BASE}/api/admin/use-cases`, cred).then(json<AdminCase[]>),
+  listCases: async () =>
+    fetch(`${BASE}/api/admin/use-cases`, await authInit()).then(json<AdminCase[]>),
 
-  createCase: (body: {
+  createCase: async (body: {
     title: string;
     description: string;
     industry?: string;
     region?: string;
   }) =>
-    fetch(`${BASE}/api/admin/use-cases`, {
+    fetch(`${BASE}/api/admin/use-cases`, await authInit({
       method: "POST",
-      credentials: "include",
       headers: { "content-type": "application/json" },
       body: JSON.stringify(body),
-    }).then(json<AdminCase>),
+    })).then(json<AdminCase>),
 
-  setStatus: (id: string, status: "open" | "closed") =>
-    fetch(`${BASE}/api/admin/use-cases/${id}`, {
+  setStatus: async (id: string, status: "open" | "closed") =>
+    fetch(`${BASE}/api/admin/use-cases/${id}`, await authInit({
       method: "PATCH",
-      credentials: "include",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ status }),
-    }).then(json<AdminCase>),
+    })).then(json<AdminCase>),
 
-  responsesFor: (id: string) =>
-    fetch(`${BASE}/api/admin/use-cases/${id}/responses`, cred).then(json<AdminResponse[]>),
+  responsesFor: async (id: string) =>
+    fetch(`${BASE}/api/admin/use-cases/${id}/responses`, await authInit()).then(json<AdminResponse[]>),
 
-  listPartners: () =>
-    fetch(`${BASE}/api/admin/partners`, cred).then(json<AdminPartner[]>),
+  listPartners: async () =>
+    fetch(`${BASE}/api/admin/partners`, await authInit()).then(json<AdminPartner[]>),
 };
