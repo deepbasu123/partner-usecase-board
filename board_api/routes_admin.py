@@ -11,8 +11,8 @@ import os
 from fastapi import APIRouter, Depends, Request, Response, HTTPException
 
 from . import db, email
-from .admin_auth import (ADMIN_COOKIE_NAME, check_password, make_admin_cookie,
-                         require_admin)
+from .admin_auth import (ADMIN_COOKIE_NAME, ADMIN_EMAIL, check_password,
+                         make_admin_cookie, require_admin, admin_identity)
 from .models import UseCaseIn, StatusIn, AdminLoginIn
 
 # Unguarded: only the login endpoint lives here.
@@ -22,8 +22,7 @@ router = APIRouter(dependencies=[Depends(require_admin)])
 
 # Public board URL included in the "new use case" email to partners.
 BOARD_URL = os.environ.get("BOARD_URL", "https://partner-board.example.com")
-# Identity recorded as posted_by (no per-user identity behind a shared password).
-ADMIN_EMAIL = os.environ.get("ADMIN_EMAIL", "admin@example.com")
+# ADMIN_EMAIL is imported from admin_auth (shared definition).
 
 _COOKIE_SECURE = os.environ.get("COOKIE_SECURE", "true").lower() != "false"
 _ADMIN_MAX_AGE = 60 * 60 * 24 * 7  # 7-day admin session
@@ -81,5 +80,5 @@ def list_partners():
 
 
 @router.get("/api/admin/whoami")
-def whoami():
-    return {"email": ADMIN_EMAIL}
+def whoami(request: Request):
+    return {"email": admin_identity(request)}

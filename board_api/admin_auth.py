@@ -3,6 +3,10 @@
 A correct password mints a signed admin cookie; every /api/admin/* data route
 depends on require_admin, which 401s without a valid cookie. The admin JS being
 publicly downloadable is harmless because every data call is server-gated.
+
+Task 1 extension: require_admin also accepts a valid @databricks.com Clerk JWT
+in the Authorization: Bearer header, so Databricks employees can reach admin
+routes without the shared password.
 """
 import hmac
 import logging
@@ -10,6 +14,8 @@ import os
 
 from fastapi import Request, HTTPException
 from itsdangerous import URLSafeSerializer, BadSignature
+
+from . import clerk_auth
 
 log = logging.getLogger("board.admin_auth")
 
@@ -51,7 +57,43 @@ def is_valid_admin(token: str) -> bool:
         return False
 
 
+def is_databricks_email(email) -> bool:
+    """True only for exact ...@databricks.com addresses (case-insensitive)."""
+    if not email:
+        return False
+    return email.strip().lower().endswith("@databricks.com")
+
+
+def _databricks_clerk_email(request) -> str | None:
+    """Return the verified Clerk email IFF it's a @databricks.com address, else None.
+
+    Any verification failure returns None so require_admin falls through to the
+    cookie check and ultimately 401 — never grants admin on a bad token.
+    """
+    auth = request.headers.get("Authorization", "")
+    if not auth.startswith("Bearer "):
+        return None
+    token = auth[len("Bearer "):]
+    try:
+        claims = clerk_auth.verify_token(token)
+    except Exception:
+        return None
+    email = claims.get("email")
+    return email if is_databricks_email(email) else None
+
+
 def require_admin(request: Request) -> None:
-    """FastAPI dependency: 401 unless a valid admin cookie is present."""
-    if not is_valid_admin(request.cookies.get(ADMIN_COOKIE_NAME, "")):
-        raise HTTPException(401, "admin login required")
+    """Pass on a valid admin cookie OR a valid @databricks.com Clerk JWT."""
+    if is_valid_admin(request.cookies.get(ADMIN_COOKIE_NAME, "")):
+        return
+    if _databricks_clerk_email(request):
+        return
+    raise HTTPException(401, "admin login required")
+
+
+ADMIN_EMAIL = os.environ.get("ADMIN_EMAIL", "admin@example.com")
+
+
+def admin_identity(request: Request) -> str:
+    """Effective admin email: the Clerk email if Clerk-authed, else ADMIN_EMAIL."""
+    return _databricks_clerk_email(request) or ADMIN_EMAIL
