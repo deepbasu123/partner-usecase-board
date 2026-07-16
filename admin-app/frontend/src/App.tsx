@@ -46,6 +46,16 @@ export default function App() {
 
   useEffect(() => { if (clerkLoaded) probe(); }, [clerkLoaded]);
 
+  // Fallback: if Clerk never finishes loading (outage, blocked/invalid key,
+  // network to Clerk blocked), don't spin forever — probe anyway after a short
+  // wait so the shared-password login stays reachable. With no Clerk token the
+  // probe's whoami 401s and AdminLogin renders, exactly as a signed-out visitor.
+  useEffect(() => {
+    if (clerkLoaded) return;
+    const t = setTimeout(() => { if (!clerkLoaded) probe(); }, 4000);
+    return () => clearTimeout(t);
+  }, [clerkLoaded]);
+
   // Load cases once authenticated.
   useEffect(() => {
     if (authed !== true) return;
