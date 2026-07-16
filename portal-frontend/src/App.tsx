@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import { Routes, Route, useNavigate, useLocation } from "react-router-dom";
 import { useAuth, useUser } from "@clerk/react";
 import { makeApi, type Partner } from "./api";
+import { isDatabricksEmail } from "./auth";
 import { Rail } from "./components/Chrome";
 import { BoardPage } from "./components/BoardPage";
 import { SignInPage } from "./components/SignInPage";
@@ -10,7 +11,8 @@ import { CaseDetail } from "./components/CaseDetail";
 
 export default function App() {
   const { getToken, isSignedIn } = useAuth();
-  const { isLoaded } = useUser();
+  const { user, isLoaded } = useUser();
+  const dbxEmail = isDatabricksEmail(user?.primaryEmailAddress?.emailAddress);
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const [partner, setPartner] = useState<Partner | null>(null);
@@ -18,8 +20,15 @@ export default function App() {
 
   const api = useCallback(() => makeApi(() => getToken()), [getToken]);
 
+  // Databricks staff belong in the admin cockpit, not the partner portal.
   useEffect(() => {
-    if (!isLoaded || !isSignedIn) {
+    if (isLoaded && isSignedIn && dbxEmail) {
+      window.location.assign("/admin");
+    }
+  }, [isLoaded, isSignedIn, dbxEmail]);
+
+  useEffect(() => {
+    if (!isLoaded || !isSignedIn || dbxEmail) {
       setPartner(null);
       setNeedsOnboarding(false);
       return;
@@ -39,7 +48,7 @@ export default function App() {
         // Transient backend error — leave state as-is rather than flipping a
         // signed-in partner to a signed-out view; the board is public anyway.
       });
-  }, [isLoaded, isSignedIn, api]);
+  }, [isLoaded, isSignedIn, dbxEmail, api]);
 
   // Route a signed-in partner with no profile to onboarding (client-side nav,
   // not a full-page reload, and only as an effect — never during render).
