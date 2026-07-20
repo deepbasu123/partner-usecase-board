@@ -123,3 +123,26 @@ def test_require_admin_rejects_garbage_token():
     with pytest.raises(HTTPException) as e:
         admin_auth.require_admin(req)
     assert e.value.status_code == 401
+
+
+def test_require_admin_matrix():
+    """Single regression pin: require_admin allows exactly two paths and rejects everything else.
+
+    Valid @databricks.com Clerk JWT  → pass (no exception)
+    Valid signed admin cookie        → pass (no exception)
+    Non-@databricks.com Clerk JWT    → 401
+    No credentials at all            → 401
+    """
+    # Allowed paths
+    dbx_req = _req(headers={"Authorization": f"Bearer {_tok({'email': 'sa@databricks.com'})}"})
+    cookie_req = _req(cookies={admin_auth.ADMIN_COOKIE_NAME: admin_auth.make_admin_cookie()})
+    admin_auth.require_admin(dbx_req)    # must not raise
+    admin_auth.require_admin(cookie_req) # must not raise
+
+    # Blocked paths
+    ext_req = _req(headers={"Authorization": f"Bearer {_tok({'email': 'partner@example.com'})}"})
+    none_req = _req()
+    for bad in (ext_req, none_req):
+        with pytest.raises(HTTPException) as exc_info:
+            admin_auth.require_admin(bad)
+        assert exc_info.value.status_code == 401
