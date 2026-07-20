@@ -91,6 +91,16 @@ export function Rail({
         <Wordmark />
       </Link>
 
+      {/* Role badge: shows how you're signed in. Databricks employees always;
+          partners only once signed in; hidden for signed-out visitors. */}
+      {role === "admin" ? (
+        <div className="role-badge role-badge-dbx">Signed in as Databricks employee</div>
+      ) : (
+        <Show when="signed-in">
+          <div className="role-badge role-badge-partner">Signed in as partner</div>
+        </Show>
+      )}
+
       {role === "admin" ? (
         <>
           <div className="navlabel">Manage</div>

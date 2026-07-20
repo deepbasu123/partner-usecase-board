@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { useAuth } from "@clerk/react";
 import type { Api, Partner, UseCase } from "../api";
 import { UseCaseCard } from "./UseCaseCard";
 import { TopBar, Loading, EmptyState, ErrorState, LakeAllianceMark, BriefcaseIcon } from "./Chrome";
 
 export function BoardPage({ partner, api }: { partner: Partner | null; api: () => Api }) {
+  const { isSignedIn } = useAuth();
   const [cases, setCases] = useState<UseCase[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -16,7 +18,6 @@ export function BoardPage({ partner, api }: { partner: Partner | null; api: () =
   }, [api]);
 
   const count = cases?.length ?? 0;
-  const signedIn = !!partner;
 
   return (
     <>
@@ -31,34 +32,33 @@ export function BoardPage({ partner, api }: { partner: Partner | null; api: () =
       />
       <main className="main">
         <div className="main-wrap">
-          <section className="chooser" aria-label="Choose how to continue">
-            <p className="section-label">Who are you?</p>
-            <div className="chooser-cards">
-              <Link className="path-card" to="/signin">
-                <span className="path-icon dbx" aria-hidden>
-                  <LakeAllianceMark />
-                </span>
-                <h3>Databricks user</h3>
-                <p>Post opportunities and review the partners who raise their hand.</p>
-                <span className="path-cta">Sign in with your Databricks email</span>
-              </Link>
+          {/* The "who are you?" chooser is only for signed-out visitors. Once
+              signed in (partner OR Databricks employee viewing the board), it's
+              hidden — the rail shows which role you're signed in as instead. */}
+          {!isSignedIn && (
+            <section className="chooser" aria-label="Choose how to continue">
+              <p className="section-label">Who are you?</p>
+              <div className="chooser-cards">
+                <Link className="path-card" to="/signin">
+                  <span className="path-icon dbx" aria-hidden>
+                    <LakeAllianceMark />
+                  </span>
+                  <h3>Databricks user</h3>
+                  <p>Post opportunities and review the partners who raise their hand.</p>
+                  <span className="path-cta">Sign in with your Databricks email</span>
+                </Link>
 
-              <Link className="path-card" to={signedIn ? "/" : "/signin"}>
-                <span className="path-icon partner" aria-hidden>
-                  <BriefcaseIcon />
-                </span>
-                <h3>Partner</h3>
-                <p>
-                  {signedIn
-                    ? "You're signed in — browse the open briefs below and raise your hand."
-                    : "Sign in with your email, then browse open briefs and raise your hand."}
-                </p>
-                <span className="path-cta">
-                  {signedIn ? "Browse the board" : "Sign in as a partner"}
-                </span>
-              </Link>
-            </div>
-          </section>
+                <Link className="path-card" to="/signin">
+                  <span className="path-icon partner" aria-hidden>
+                    <BriefcaseIcon />
+                  </span>
+                  <h3>Partner</h3>
+                  <p>Sign in with your email, then browse open briefs and raise your hand.</p>
+                  <span className="path-cta">Sign in as a partner</span>
+                </Link>
+              </div>
+            </section>
+          )}
 
           <p className="section-label">Posted use cases</p>
           {error ? (
