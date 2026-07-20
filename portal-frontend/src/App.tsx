@@ -64,7 +64,10 @@ export default function App() {
             }
           />
           {/* Break-glass login is always reachable (even with no Clerk session). */}
-          <Route path="/admin/login" element={<AdminLogin api={api} onAuthed={refresh} />} />
+          <Route
+            path="/admin/login"
+            element={role === "admin" ? <Navigate to="/admin" replace /> : <AdminLogin api={api} onAuthed={refresh} />}
+          />
           {/* Admin cockpit — gated in the UI by role; the backend gates the data. */}
           <Route
             path="/admin"

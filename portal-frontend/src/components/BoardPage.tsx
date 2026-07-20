@@ -34,15 +34,14 @@ export function BoardPage({ partner, api }: { partner: Partner | null; api: () =
           <section className="chooser" aria-label="Choose how to continue">
             <p className="section-label">Who are you?</p>
             <div className="chooser-cards">
-              {/* /admin is a separate SPA at its own base path → full navigation. */}
-              <a className="path-card" href="/admin">
+              <Link className="path-card" to="/signin">
                 <span className="path-icon dbx" aria-hidden>
                   <DatabricksLogo />
                 </span>
                 <h3>Databricks user</h3>
                 <p>Post opportunities and review the partners who raise their hand.</p>
-                <span className="path-cta">Go to the admin portal</span>
-              </a>
+                <span className="path-cta">Sign in with your Databricks email</span>
+              </Link>
 
               <Link className="path-card" to={signedIn ? "/" : "/signin"}>
                 <span className="path-icon partner" aria-hidden>
