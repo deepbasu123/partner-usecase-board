@@ -368,8 +368,6 @@ a.uc-card:hover .respond-hint::after { margin-left: 4px; }
 
 /* ── admin sections harmonised to the portal (editorial) palette ─────────── */
 .login-shell { background: var(--oat); }
-.login-btn, .btn-primary { background: var(--lava); color: #fff; }
+.login-btn { background: var(--lava); color: #fff; }
 .count-chip { border-color: #f6cec7; color: var(--lava-dark); }
 .case-row { background: var(--surface); border: 1px solid var(--line); }
-.pill-open { background: var(--ok-wash); color: var(--ok); }
-.pill-closed { background: #efe9e0; color: #7a6f5c; }

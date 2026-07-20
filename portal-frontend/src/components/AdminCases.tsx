@@ -104,6 +104,7 @@ function CaseRow({ api, c, onChanged }: { api: () => Api; c: AdminCase; onChange
   const [open, setOpen] = useState(false);
   const [responses, setResponses] = useState<AdminResponse[] | null>(null);
   const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
 
   async function toggleResponses() {
     const next = !open;
@@ -112,9 +113,12 @@ function CaseRow({ api, c, onChanged }: { api: () => Api; c: AdminCase; onChange
   }
   async function toggleStatus() {
     setBusy(true);
+    setErr(null);
     try {
       const u = await api().setCaseStatus(c.id, c.status === "open" ? "closed" : "open");
       onChanged({ ...c, status: u.status, closed_at: u.closed_at });
+    } catch {
+      setErr("Couldn't update — try again.");
     } finally {
       setBusy(false);
     }
@@ -139,6 +143,7 @@ function CaseRow({ api, c, onChanged }: { api: () => Api; c: AdminCase; onChange
           {c.status === "open" ? "Close" : "Reopen"}
         </button>
       </div>
+      {err && <div className="notice notice-err">{err}</div>}
       {open && (
         <div className="responses">
           {responses === null ? (
