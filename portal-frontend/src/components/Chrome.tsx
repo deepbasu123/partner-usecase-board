@@ -66,7 +66,6 @@ export function Rail({
   const { pathname } = useLocation();
   const onBoard = pathname === "/" || pathname.startsWith("/case");
   const onJoin = pathname.startsWith("/signin");
-  const onAdmin = pathname.startsWith("/admin");
 
   return (
     <nav className="rail">
@@ -78,13 +77,13 @@ export function Rail({
       {role === "admin" ? (
         <>
           <div className="navlabel">Manage</div>
-          <Link to="/admin" className={`navitem ${onAdmin && pathname === "/admin" ? "active" : ""}`}>
+          <Link to="/admin" className={`navitem ${pathname === "/admin" ? "active" : ""}`}>
             <AdminIcon /> Use cases
           </Link>
           <Link to="/admin/partners" className={`navitem ${pathname === "/admin/partners" ? "active" : ""}`}>
             <JoinIcon /> Partners
           </Link>
-          <Link to="/" className={`navitem ${onBoard ? "active" : ""}`}>
+          <Link to={onBoard ? "/admin" : "/"} className="navitem">
             <BoardIcon /> {onBoard ? "Back to admin" : "View board"}
           </Link>
           <div className="spacer" />
