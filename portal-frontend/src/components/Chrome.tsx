@@ -52,40 +52,68 @@ function AdminIcon() {
   );
 }
 
-/** Sidebar rail shown on every portal page. */
-export function Rail({ partner }: { partner: Partner | null }) {
+/** Sidebar rail. Role-aware: partners see Browse + sign-in; admins see the
+ *  admin sections plus a "View board" toggle. */
+export function Rail({
+  role,
+  partner,
+  adminEmail,
+}: {
+  role: import("../role").Role;
+  partner: Partner | null;
+  adminEmail: string | null;
+}) {
   const { pathname } = useLocation();
   const onBoard = pathname === "/" || pathname.startsWith("/case");
   const onJoin = pathname.startsWith("/signin");
+  const onAdmin = pathname.startsWith("/admin");
+
   return (
     <nav className="rail">
-      <Link to="/" className="logo">
+      <Link to={role === "admin" ? "/admin" : "/"} className="logo">
         <DatabricksLogo />
         <div className="wordmark">Partner Board</div>
       </Link>
 
-      <div className="navlabel">Browse</div>
-      <Link to="/" className={`navitem ${onBoard ? "active" : ""}`}>
-        <BoardIcon /> Open use cases
-      </Link>
-      <Show when="signed-out">
-        <Link to="/signin" className={`navitem ${onJoin ? "active" : ""}`}>
-          <JoinIcon /> Sign in as a partner
-        </Link>
-      </Show>
-      <Show when="signed-in">
-        <div className="navitem">
-          <UserButton /> {partner?.company ?? "Account"}
-        </div>
-      </Show>
-
-      <div className="navlabel">Databricks team</div>
-      {/* /admin is a separate SPA at its own base path → full navigation. */}
-      <a href="/admin" className="navitem">
-        <AdminIcon /> Admin portal
-      </a>
-
-      <div className="spacer" />
+      {role === "admin" ? (
+        <>
+          <div className="navlabel">Manage</div>
+          <Link to="/admin" className={`navitem ${onAdmin && pathname === "/admin" ? "active" : ""}`}>
+            <AdminIcon /> Use cases
+          </Link>
+          <Link to="/admin/partners" className={`navitem ${pathname === "/admin/partners" ? "active" : ""}`}>
+            <JoinIcon /> Partners
+          </Link>
+          <Link to="/" className={`navitem ${onBoard ? "active" : ""}`}>
+            <BoardIcon /> {onBoard ? "Back to admin" : "View board"}
+          </Link>
+          <div className="spacer" />
+          {adminEmail && (
+            <div className="navitem" title={adminEmail}>
+              <span className="avatar">{initials(adminEmail)}</span>
+              <span className="who-txt">{adminEmail}</span>
+            </div>
+          )}
+        </>
+      ) : (
+        <>
+          <div className="navlabel">Browse</div>
+          <Link to="/" className={`navitem ${onBoard ? "active" : ""}`}>
+            <BoardIcon /> Open use cases
+          </Link>
+          <Show when="signed-out">
+            <Link to="/signin" className={`navitem ${onJoin ? "active" : ""}`}>
+              <JoinIcon /> Sign in as a partner
+            </Link>
+          </Show>
+          <Show when="signed-in">
+            <div className="navitem">
+              <UserButton /> {partner?.company ?? "Account"}
+            </div>
+          </Show>
+          <div className="spacer" />
+        </>
+      )}
     </nav>
   );
 }
