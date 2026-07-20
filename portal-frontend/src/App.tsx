@@ -1,18 +1,21 @@
 import { useEffect, useState, useCallback } from "react";
-import { Routes, Route, useNavigate, useLocation } from "react-router-dom";
+import { Routes, Route, useNavigate, useLocation, Navigate } from "react-router-dom";
 import { useAuth, useUser } from "@clerk/react";
 import { makeApi, type Partner } from "./api";
-import { isDatabricksEmail } from "./auth";
+import { useRole } from "./role";
 import { Rail } from "./components/Chrome";
 import { BoardPage } from "./components/BoardPage";
 import { SignInPage } from "./components/SignInPage";
 import { Onboarding } from "./components/Onboarding";
 import { CaseDetail } from "./components/CaseDetail";
+import { AdminCases } from "./components/AdminCases";
+import { AdminPartners } from "./components/AdminPartners";
+import { AdminLogin } from "./components/AdminLogin";
 
 export default function App() {
   const { getToken, isSignedIn } = useAuth();
-  const { user, isLoaded } = useUser();
-  const dbxEmail = isDatabricksEmail(user?.primaryEmailAddress?.emailAddress);
+  const { isLoaded } = useUser();
+  const { role, email: adminEmail, refresh } = useRole();
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const [partner, setPartner] = useState<Partner | null>(null);
@@ -20,64 +23,51 @@ export default function App() {
 
   const api = useCallback(() => makeApi(() => getToken()), [getToken]);
 
-  // Databricks staff belong in the admin cockpit, not the partner portal.
+  // Partner profile lookup runs for partners only (not admins, not while loading).
   useEffect(() => {
-    if (isLoaded && isSignedIn && dbxEmail) {
-      window.location.assign("/admin");
-    }
-  }, [isLoaded, isSignedIn, dbxEmail]);
-
-  useEffect(() => {
-    if (!isLoaded || !isSignedIn || dbxEmail) {
+    if (role !== "partner" || !isLoaded || !isSignedIn) {
       setPartner(null);
       setNeedsOnboarding(false);
       return;
     }
-    api()
-      .me()
-      .then((m) => {
-        if (m && "onboarding_required" in m) {
-          setNeedsOnboarding(true);
-          setPartner(null);
-        } else if (m) {
-          setPartner(m);
-          setNeedsOnboarding(false);
-        }
-      })
-      .catch(() => {
-        // Transient backend error — leave state as-is rather than flipping a
-        // signed-in partner to a signed-out view; the board is public anyway.
-      });
-  }, [isLoaded, isSignedIn, dbxEmail, api]);
+    api().me().then((m) => {
+      if (m && "onboarding_required" in m) { setNeedsOnboarding(true); setPartner(null); }
+      else if (m) { setPartner(m); setNeedsOnboarding(false); }
+    }).catch(() => { /* transient: keep state; board is public anyway */ });
+  }, [role, isLoaded, isSignedIn, api]);
 
-  // Route a signed-in partner with no profile to onboarding (client-side nav,
-  // not a full-page reload, and only as an effect — never during render).
+  // Onboarding redirect — effect, never during render.
   useEffect(() => {
-    if (needsOnboarding && pathname !== "/onboarding") {
-      navigate("/onboarding");
-    }
+    if (needsOnboarding && pathname !== "/onboarding") navigate("/onboarding");
   }, [needsOnboarding, pathname, navigate]);
+
+  if (role === "loading") {
+    return <div className="login-shell"><div className="spinner" /></div>;
+  }
 
   return (
     <div className="app">
-      <Rail partner={partner} />
+      <Rail role={role} partner={partner} adminEmail={adminEmail} />
       <div className="content">
         <Routes>
           <Route path="/" element={<BoardPage partner={partner} api={api} />} />
           <Route path="/signin/*" element={<SignInPage />} />
+          <Route path="/case/:id" element={<CaseDetail partner={partner} api={api} />} />
           <Route
             path="/onboarding"
-            element={
-              <Onboarding
-                api={api}
-                onDone={(p) => {
-                  setPartner(p);
-                  setNeedsOnboarding(false);
-                }}
-              />
-            }
+            element={<Onboarding api={api} onDone={(p) => { setPartner(p); setNeedsOnboarding(false); }} />}
           />
-          <Route path="/case/:id" element={<CaseDetail partner={partner} api={api} />} />
+          {/* Break-glass login is always reachable (even with no Clerk session). */}
+          <Route path="/admin/login" element={<AdminLogin api={api} onAuthed={refresh} />} />
+          {/* Admin cockpit — gated in the UI by role; the backend gates the data. */}
+          <Route
+            path="/admin"
+            element={role === "admin" ? <AdminCases api={api} /> : <Navigate to="/admin/login" replace />}
+          />
+          <Route
+            path="/admin/partners"
+            element={role === "admin" ? <AdminPartners api={api} /> : <Navigate to="/admin/login" replace />}
+          />
         </Routes>
       </div>
     </div>
