@@ -2,7 +2,7 @@ import { Link, useLocation } from "react-router-dom";
 import { Show, UserButton } from "@clerk/react";
 import type { Partner } from "../api";
 
-/** lake Alliance layered mark — three stacked layers (diamond + two chevrons). */
+/** lakeAlliance layered mark — three stacked layers (diamond + two chevrons). */
 export function LakeAllianceMark({ className = "la-mark" }: { className?: string }) {
   return (
     <svg
@@ -13,7 +13,7 @@ export function LakeAllianceMark({ className = "la-mark" }: { className?: string
       strokeWidth="3.2"
       strokeLinejoin="round"
       strokeLinecap="round"
-      aria-label="lake Alliance"
+      aria-label="lakeAlliance"
     >
       <path d="M32 5 L58 21 L32 37 L6 21 Z" />
       <path d="M8 27 L32 44 L56 27" />
@@ -22,11 +22,11 @@ export function LakeAllianceMark({ className = "la-mark" }: { className?: string
   );
 }
 
-/** "lake Alliance" wordmark — "lake" navy, "Alliance" lava. */
+/** "lakeAlliance" wordmark — one word, "lake" navy + "Alliance" lava (no space). */
 export function Wordmark({ className = "wordmark" }: { className?: string }) {
   return (
     <div className={className}>
-      <span className="wm-lake">lake</span> <span className="wm-alliance">Alliance</span>
+      <span className="wm-lake">lake</span><span className="wm-alliance">Alliance</span>
     </div>
   );
 }

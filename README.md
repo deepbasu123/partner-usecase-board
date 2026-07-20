@@ -1,4 +1,4 @@
-# lake Alliance
+# lakeAlliance
 
 **A Databricks app for Databricks partners.** A lightweight board where Databricks
 posts use cases needing partner help, partners sign in with their email and browse

@@ -64,7 +64,7 @@ def _safe(to: list[str], subject: str, body: str) -> None:
 
 def send_welcome(to_email: str, company: str) -> None:
     _safe([to_email],
-          "You're in — lake Alliance",
+          "You're in — lakeAlliance",
           f"Thanks for joining as {company}.\n\n"
           "We'll email you whenever a new use case is posted that you might be "
           "able to help with. You can browse the board any time.")

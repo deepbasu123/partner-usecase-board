@@ -74,9 +74,10 @@ a { color: var(--lava-dark); }
 .rail .logo .la-mark { width: 30px; height: 27px; flex: none; }
 .rail .logo .wordmark { font-weight: 700; font-size: 16px; line-height: 1.15; }
 
-/* lake Alliance two-tone wordmark */
-.wordmark .wm-lake { color: var(--ink); }
-.wordmark .wm-alliance { color: var(--lava); }
+/* lakeAlliance two-tone wordmark — unscoped so it also applies under
+   .login-wordmark (admin login) and anywhere else the Wordmark renders. */
+.wm-lake { color: var(--ink); }
+.wm-alliance { color: var(--lava); }
 
 .rail .navlabel {
   font-size: 10.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-faint);
