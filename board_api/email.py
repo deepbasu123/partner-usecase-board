@@ -1,65 +1,80 @@
-"""Outbound email notifications for the Partner Use-Case Board.
+"""Outbound email notifications for lakeAlliance.
 
-Shared by both surfaces (partner portal + admin app). Best-effort by design:
-a transport failure is logged and swallowed so it never breaks the HTTP
-request that triggered it.
+Transport is Gmail SMTP (smtplib, stdlib — no extra dependency). We use a Gmail
+account + an app password because the app owns no sending domain; Gmail delivers
+to any recipient, unlike Resend's shared onboarding@ sender (owner-only). The
+account is set via GMAIL_USER / GMAIL_APP_PASSWORD (a 16-char Google App Password,
+which requires 2-Step Verification on that Google account).
 
-CANONICAL COPY. This file lives in common/ and is copied verbatim into each
-backend package (portal_backend/email.py, admin-app/backend/email.py) so each
-can `from . import email`. Edit here, then re-copy.
+Best-effort by design: a transport failure is logged and swallowed by _safe() so
+it never breaks the HTTP request that triggered it (signup / post / EOI stay
+200/201).
 
-Transport is Resend's REST API (POST /emails), called via stdlib urllib so no
-extra dependency is needed. A missing key or non-2xx raises inside _send; _safe()
-logs and swallows it so a mail failure never breaks the triggering request. The
-from-address is Resend's shared onboarding@resend.dev (no verified domain yet),
-which limits delivery to the Resend account-owner address for now.
+Privacy: multi-recipient notifications (a new use case → every partner) are sent
+with the recipients in **Bcc**, never the visible To — so partners never see one
+another's email addresses. Single-recipient mail (welcome) uses To normally.
 """
-import json
 import logging
 import os
-import urllib.request
+import smtplib
+from email.message import EmailMessage  # stdlib email pkg (absolute import; not this module)
 
 log = logging.getLogger("board.email")
 
-FROM_ADDR = os.environ.get("EMAIL_FROM", "onboarding@resend.dev")
+SMTP_HOST = os.environ.get("SMTP_HOST", "smtp.gmail.com")
+SMTP_PORT = int(os.environ.get("SMTP_PORT", "465"))          # SSL
+GMAIL_USER = os.environ.get("GMAIL_USER", "")                # the sending Gmail address
+GMAIL_APP_PASSWORD = os.environ.get("GMAIL_APP_PASSWORD", "")  # 16-char Google App Password
+FROM_NAME = os.environ.get("EMAIL_FROM_NAME", "lakeAlliance")  # friendly display name
 
 
-RESEND_ENDPOINT = "https://api.resend.com/emails"
+def _send(to: list[str], subject: str, body: str, bcc: list[str] | None = None) -> None:
+    """Deliver one message via Gmail SMTP.
 
-
-def _send(to: list[str], subject: str, body: str) -> None:
-    """Deliver via Resend's REST API using stdlib urllib (no extra dep).
-
-    Raises on missing key or non-2xx so _safe() logs and swallows it. Keep this
-    signature stable — send_* and the tests depend on it.
+    `to` addresses appear in the visible To header; `bcc` addresses are delivered
+    but never appear in any header (recipient privacy). Raises on missing
+    credentials or SMTP error so _safe() logs and swallows it. Keep the signature
+    stable — the send_* helpers and the tests depend on it.
     """
-    key = os.environ.get("RESEND_API_KEY")
-    if not key:
-        raise RuntimeError("RESEND_API_KEY not set")
-    payload = json.dumps({
-        "from": FROM_ADDR,
-        "to": to,
-        "subject": subject,
-        "text": body,
-    }).encode()
-    req = urllib.request.Request(
-        RESEND_ENDPOINT, data=payload, method="POST",
-        headers={"Authorization": f"Bearer {key}",
-                 "Content-Type": "application/json",
-                 "User-Agent": "partner-board/1.0"},
-    )
-    # Timeout well under a typical serverless function budget so a hung Resend
-    # call can't cascade into a platform-level 504 on the triggering request.
-    with urllib.request.urlopen(req, timeout=5):
-        pass
+    if not GMAIL_USER or not GMAIL_APP_PASSWORD:
+        raise RuntimeError("GMAIL_USER / GMAIL_APP_PASSWORD not set")
+
+    envelope = list(to) + list(bcc or [])
+    if not envelope:
+        return  # nothing to deliver
+
+    msg = EmailMessage()
+    msg["From"] = f"{FROM_NAME} <{GMAIL_USER}>"
+    msg["To"] = ", ".join(to) or GMAIL_USER  # never leave To empty
+    msg["Subject"] = subject
+    msg.set_content(body)
+
+    # Timeout well under the serverless function budget so a hung SMTP call can't
+    # cascade into a platform 504 on the triggering request.
+    with smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT, timeout=8) as s:
+        s.login(GMAIL_USER, GMAIL_APP_PASSWORD)
+        # Explicit to_addrs = the full envelope, so Bcc recipients are delivered
+        # without a Bcc header ever being written.
+        s.send_message(msg, to_addrs=envelope)
 
 
-def _safe(to: list[str], subject: str, body: str) -> None:
+def _safe(to: list[str], subject: str, body: str, bcc: list[str] | None = None) -> None:
     """Best-effort send: log and swallow any transport error."""
     try:
-        _send(to, subject, body)
+        _send(to, subject, body, bcc=bcc)
     except Exception as e:  # noqa: BLE001 - notifications must never break requests
-        log.warning("email send failed to %s (%r): %s", to, subject, e)
+        log.warning("email send failed (to=%s bcc=%s subj=%r): %s", to, bcc, subject, e)
+
+
+def _fanout(recipients: list[str], subject: str, body: str) -> None:
+    """Send one message to many recipients, each hidden from the others via Bcc.
+
+    The visible To is the sending account itself, so there is a valid To header
+    and the owner also gets a copy; every real recipient is in Bcc.
+    """
+    if not recipients:
+        return
+    _safe([GMAIL_USER], subject, body, bcc=recipients)
 
 
 def send_welcome(to_email: str, company: str) -> None:
@@ -72,14 +87,16 @@ def send_welcome(to_email: str, company: str) -> None:
 
 def send_new_use_case(to_emails: list[str], title: str, description: str,
                       board_url: str) -> None:
-    _safe(to_emails,
-          f"New partner use case: {title}",
-          f"{title}\n\n{description}\n\nSee it on the board: {board_url}")
+    # Bcc every partner so recipients never see one another's addresses.
+    _fanout(to_emails,
+            f"New partner use case: {title}",
+            f"{title}\n\n{description}\n\nSee it on the board: {board_url}")
 
 
 def send_new_eoi(to_emails: list[str], company: str, title: str,
                  approach: str) -> None:
-    _safe(to_emails,
-          f"New response to “{title}” from {company}",
-          f"{company} expressed interest in: {title}\n\n"
-          f"Their approach:\n{approach}")
+    # Bcc the (internal) notify recipients too, for consistency and safety.
+    _fanout(to_emails,
+            f"New response to “{title}” from {company}",
+            f"{company} expressed interest in: {title}\n\n"
+            f"Their approach:\n{approach}")

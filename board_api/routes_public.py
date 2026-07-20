@@ -70,7 +70,9 @@ def respond(uc_id: str, body: EoiIn, identity: dict = Depends(require_identity))
         raise HTTPException(409, "you've already responded to this use case")
 
     recipients = list(_NOTIFY)
-    poster = uc.get("posted_by") or os.environ.get("EMAIL_FROM")
+    # Notify whoever posted the case; fall back to the admin address (posted_by
+    # is set to ADMIN_EMAIL at creation, so the fallback is a safety net only).
+    poster = uc.get("posted_by") or os.environ.get("ADMIN_EMAIL")
     if poster and poster not in recipients:
         recipients.append(poster)
     if recipients:
