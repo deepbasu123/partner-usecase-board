@@ -52,5 +52,7 @@ export function useRole() {
     void resolve();
   }, [resolve]);
 
-  return { role, email, refresh: () => void resolve() };
+  const refresh = useCallback(() => void resolve(), [resolve]);
+
+  return { role, email, refresh };
 }
