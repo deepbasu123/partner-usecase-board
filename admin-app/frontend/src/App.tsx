@@ -1,3 +1,7 @@
+// DEPRECATED (2026-07-20): the admin cockpit now lives inside portal-frontend/
+// as role-gated routes. This file is no longer built or deployed on
+// vercel-neon-deploy. Kept only for the Databricks-App variant referenced by main.
+
 import { useEffect, useState } from "react";
 import { useAuth, useUser } from "@clerk/react";
 import { api, setAdminTokenGetter, ApiError, type AdminCase, type AdminPartner } from "./api";

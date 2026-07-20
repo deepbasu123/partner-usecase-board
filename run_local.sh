@@ -2,8 +2,8 @@
 # Run the merged board_api app locally against a Postgres given by DATABASE_URL.
 # Usage:
 #   DATABASE_URL='postgresql://.../neondb?sslmode=require' ./run_local.sh
-# Serves the API on :8000. Point a local Vite dev server (portal :5173,
-# admin :5174) at it via their proxies, or curl /api directly.
+# Serves the API on :8000. Point a local Vite dev server (portal :5173)
+# at it via its proxy, or curl /api directly.
 set -euo pipefail
 
 : "${DATABASE_URL:?set DATABASE_URL (Neon pooled string, ?sslmode=require only)}"
