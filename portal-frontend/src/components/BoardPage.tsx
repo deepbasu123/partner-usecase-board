@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import type { Api, Partner, UseCase } from "../api";
 import { UseCaseCard } from "./UseCaseCard";
-import { TopBar, Loading, EmptyState, ErrorState, DatabricksLogo, BriefcaseIcon } from "./Chrome";
+import { TopBar, Loading, EmptyState, ErrorState, LakeAllianceMark, BriefcaseIcon } from "./Chrome";
 
 export function BoardPage({ partner, api }: { partner: Partner | null; api: () => Api }) {
   const [cases, setCases] = useState<UseCase[] | null>(null);
@@ -36,7 +36,7 @@ export function BoardPage({ partner, api }: { partner: Partner | null; api: () =
             <div className="chooser-cards">
               <Link className="path-card" to="/signin">
                 <span className="path-icon dbx" aria-hidden>
-                  <DatabricksLogo />
+                  <LakeAllianceMark />
                 </span>
                 <h3>Databricks user</h3>
                 <p>Post opportunities and review the partners who raise their hand.</p>

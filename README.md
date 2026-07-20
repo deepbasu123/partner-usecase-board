@@ -1,9 +1,9 @@
-# Partner Use-Case Board
+# lake Alliance
 
-A lightweight pilot where Databricks posts use cases needing partner help, GT
-partners sign up by email and browse a live board, submit a structured
-expression of interest (EOI), and Databricks gets notified and compares
-responses.
+**A Databricks app for Databricks partners.** A lightweight board where Databricks
+posts use cases needing partner help, partners sign in with their email and browse
+a live board, submit a structured expression of interest (EOI), and Databricks gets
+notified and compares responses.
 
 ## 🚀 Live on Vercel + Neon (this branch)
 

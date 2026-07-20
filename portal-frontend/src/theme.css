@@ -71,8 +71,12 @@ a { color: var(--lava-dark); }
 }
 
 .rail .logo { display: flex; align-items: center; gap: 11px; padding: 6px 10px 20px; text-decoration: none; }
-.rail .logo .dbx-logo { width: 26px; height: 28px; flex: none; }
-.rail .logo .wordmark { color: var(--ink); font-weight: 700; font-size: 16px; line-height: 1.15; }
+.rail .logo .la-mark { width: 30px; height: 27px; flex: none; }
+.rail .logo .wordmark { font-weight: 700; font-size: 16px; line-height: 1.15; }
+
+/* lake Alliance two-tone wordmark */
+.wordmark .wm-lake { color: var(--ink); }
+.wordmark .wm-alliance { color: var(--lava); }
 
 .rail .navlabel {
   font-size: 10.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-faint);
@@ -99,7 +103,7 @@ a { color: var(--lava-dark); }
 .topbar h1 { font-size: 19px; }
 .topbar .sub { font-size: 12.5px; color: var(--ink-faint); margin-top: 1px; }
 .topbar-lead { display: flex; align-items: center; gap: 14px; min-width: 0; }
-.topbar-lead .dbx-logo { width: 26px; height: 28px; flex: none; }
+.topbar-lead .la-mark { width: 28px; height: 25px; flex: none; }
 .topbar-sep { width: 1px; height: 26px; background: var(--line); flex: none; }
 .who-chip {
   display: flex; align-items: center; gap: 9px; min-width: 0;
@@ -148,7 +152,7 @@ a { color: var(--lava-dark); }
   margin-bottom: 4px; flex: none;
 }
 .path-icon.dbx { background: var(--lava-wash); }
-.path-icon.dbx .dbx-logo { width: 23px; height: 25px; }
+.path-icon.dbx .la-mark { width: 24px; height: 22px; }
 .path-icon.partner { background: #e8eef1; }        /* soft navy tint */
 .path-icon.partner svg { width: 22px; height: 22px; color: var(--navy); }
 .path-card h3 { font-size: 17px; }
@@ -328,7 +332,8 @@ a.uc-card:hover .respond-hint::after { margin-left: 4px; }
   flex-direction: column;
 }
 .login-logo { display: flex; align-items: center; gap: 10px; margin-bottom: 22px; }
-.login-wordmark { font-weight: 700; font-size: 17px; letter-spacing: -0.01em; color: var(--ink); }
+.login-logo .la-mark { width: 30px; height: 27px; flex: none; }
+.login-wordmark { font-weight: 700; font-size: 17px; letter-spacing: -0.01em; }
 .login-title { font-size: 20px; margin-bottom: 6px; }
 .login-sub { color: var(--ink-soft); font-size: 14px; margin: 0 0 20px; }
 .login-label { font-size: 13px; font-weight: 600; color: var(--ink-soft); margin-bottom: 6px; }

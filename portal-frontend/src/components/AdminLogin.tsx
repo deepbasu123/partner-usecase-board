@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { ApiError, type Api } from "../api";
-import { DatabricksLogo } from "./Chrome";
+import { LakeAllianceMark, Wordmark } from "./Chrome";
 
 // Break-glass password gate. Reachable at /admin/login WITHOUT a Clerk session,
 // so it works during a Clerk outage and for a non-@databricks.com admin. On
@@ -32,8 +32,8 @@ export function AdminLogin({ api, onAuthed }: { api: () => Api; onAuthed: () => 
     <div className="login-shell">
       <form className="login-card" onSubmit={submit}>
         <div className="login-logo">
-          <DatabricksLogo />
-          <div className="login-wordmark">Partner Board</div>
+          <LakeAllianceMark />
+          <Wordmark className="login-wordmark" />
         </div>
         <h1 className="login-title">Admin sign in</h1>
         <p className="login-sub">Break-glass password for the Databricks team. Employees normally sign in with their @databricks.com email instead.</p>

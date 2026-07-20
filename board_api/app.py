@@ -7,7 +7,7 @@ from fastapi import FastAPI
 
 from . import routes_public, routes_admin
 
-app = FastAPI(title="Partner Use-Case Board — API")
+app = FastAPI(title="lake Alliance — API")
 
 app.include_router(routes_public.router)
 app.include_router(routes_admin.public_router)   # /api/admin/login (unguarded)

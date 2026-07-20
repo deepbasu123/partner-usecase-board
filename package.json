@@ -1,5 +1,5 @@
 {
-  "name": "partner-usecase-board",
+  "name": "lake-alliance",
   "private": true,
   "version": "0.1.0",
   "description": "Vercel static-build wrapper: builds portal (/) + admin (/admin) into dist/",
