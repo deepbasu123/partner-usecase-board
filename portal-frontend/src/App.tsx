@@ -55,7 +55,13 @@ export default function App() {
           <Route path="/case/:id" element={<CaseDetail partner={partner} api={api} />} />
           <Route
             path="/onboarding"
-            element={<Onboarding api={api} onDone={(p) => { setPartner(p); setNeedsOnboarding(false); }} />}
+            element={
+              role === "partner" ? (
+                <Onboarding api={api} onDone={(p) => { setPartner(p); setNeedsOnboarding(false); }} />
+              ) : (
+                <Navigate to="/" replace />
+              )
+            }
           />
           {/* Break-glass login is always reachable (even with no Clerk session). */}
           <Route path="/admin/login" element={<AdminLogin api={api} onAuthed={refresh} />} />
