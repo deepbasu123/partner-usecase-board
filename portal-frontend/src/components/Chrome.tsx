@@ -115,7 +115,7 @@ export function Rail({
           </Link>
           <div className="spacer" />
           {adminEmail && (
-            <div className="navitem" title={adminEmail}>
+            <div className="rail-identity" title={adminEmail}>
               <span className="avatar">{initials(adminEmail)}</span>
               <span className="who-txt">{adminEmail}</span>
             </div>

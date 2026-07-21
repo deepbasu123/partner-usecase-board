@@ -107,6 +107,22 @@ a { color: var(--lava-dark); }
 .rail .spacer { flex: 1; }
 .rail .rail-foot { font-size: 11.5px; color: var(--ink-faint); padding: 12px; line-height: 1.45; }
 
+/* Signed-in identity at the bottom of the rail. The email must truncate with an
+   ellipsis (full value is in the title tooltip) so a long address can't overflow
+   the rail. min-width:0 lets the flex child shrink below its content width. */
+.rail .rail-identity {
+  display: flex; align-items: center; gap: 10px; min-width: 0;
+  padding: 8px 10px; border-radius: 8px; background: rgba(27,43,48,.04);
+}
+.rail .rail-identity .avatar {
+  width: 26px; height: 26px; border-radius: 50%; flex: none; background: var(--navy);
+  color: #fff; font-size: 11px; font-weight: 700; display: grid; place-items: center;
+}
+.rail .rail-identity .who-txt {
+  min-width: 0; flex: 1; font-size: 12.5px; color: var(--ink-soft);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
 /* ---------- content ---------- */
 .content { min-width: 0; display: flex; flex-direction: column; background: var(--surface); }
 .topbar {

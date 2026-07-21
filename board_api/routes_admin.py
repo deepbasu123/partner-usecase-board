@@ -40,12 +40,17 @@ def login(body: AdminLoginIn, response: Response):
 
 
 @router.post("/api/admin/use-cases", status_code=201)
-def create_case(body: UseCaseIn):
+def create_case(body: UseCaseIn, request: Request):
+    # posted_by = the actual signed-in Databricks person (their Clerk
+    # @databricks.com email). Falls back to ADMIN_EMAIL only for break-glass
+    # password logins, which carry no per-user identity. This is also who gets
+    # emailed when a partner responds (see routes_public.respond → posted_by).
+    poster = admin_identity(request)
     uc = db.create_use_case(body.title, body.description, body.industry,
-                            body.region, ADMIN_EMAIL)
+                            body.region, poster)
     # Notify every registered partner about the new opportunity. The email layer
-    # sends these as Bcc (see email._fanout), so partners never see one another's
-    # addresses.
+    # sends one message per partner (see email._fanout), so partners never see
+    # one another's addresses.
     recipients = [p["email"] for p in db.list_all_partners()]
     if recipients:
         email.send_new_use_case(recipients, uc["title"], uc["description"], BOARD_URL)
