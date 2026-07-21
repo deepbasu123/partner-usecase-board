@@ -160,38 +160,16 @@ a { color: var(--lava-dark); }
 .intro h2 { font-size: 22px; }
 .intro p { color: var(--ink-soft); font-size: 15px; margin: 8px 0 0; max-width: 62ch; }
 
-/* ---------- path chooser: two audience cards ---------- */
-.chooser { margin: 0 0 30px; }
-.chooser-cards { display: grid; gap: 16px; grid-template-columns: 1fr 1fr; }
-@media (max-width: 640px) { .chooser-cards { grid-template-columns: 1fr; } }
-
-.path-card {
-  position: relative; display: flex; flex-direction: column; gap: 6px;
-  padding: 20px; background: var(--surface); border: 1px solid var(--line);
-  border-radius: var(--radius); box-shadow: var(--shadow);
-  text-decoration: none; color: inherit; overflow: hidden;
-  transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease;
+/* Single sign-in prompt for signed-out visitors. One button — the unified
+   Clerk sign-in auto-routes @databricks.com to admin and everyone else to the
+   partner board, so no "who are you?" chooser is needed. */
+.signin-prompt {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 10px;
+  margin: 0 0 30px; padding: 24px; background: var(--surface);
+  border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow);
 }
-.path-card::before {
-  content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px;
-  background: var(--lava); transform: scaleY(0); transform-origin: top; transition: transform .16s ease;
-}
-.path-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lift); border-color: var(--lava); }
-.path-card:hover::before { transform: scaleY(1); }
-.path-card:focus-visible { outline: 2px solid var(--lava); outline-offset: 3px; }
-.path-icon {
-  width: 40px; height: 40px; border-radius: 10px; display: grid; place-items: center;
-  margin-bottom: 4px; flex: none;
-}
-.path-icon.dbx { background: var(--lava-wash); }
-.path-icon.dbx .la-mark { width: 24px; height: 22px; }
-.path-icon.partner { background: #e8eef1; }        /* soft navy tint */
-.path-icon.partner svg { width: 22px; height: 22px; color: var(--navy); }
-.path-card h3 { font-size: 17px; }
-.path-card p { color: var(--ink-soft); font-size: 14px; margin: 0; }
-.path-cta { margin-top: 10px; font-size: 13.5px; font-weight: 650; color: var(--lava-dark); }
-.path-cta::after { content: " →"; transition: margin .16s ease; }
-.path-card:hover .path-cta::after { margin-left: 4px; }
+.signin-prompt .btn { min-width: 160px; text-align: center; }
+.signin-hint { margin: 0; color: var(--ink-soft); font-size: 13.5px; }
 
 /* ---------- board of open use cases ---------- */
 .board { display: grid; gap: 14px; grid-template-columns: minmax(0,1fr) minmax(0,1fr); }

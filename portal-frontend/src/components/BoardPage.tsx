@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { useAuth } from "@clerk/react";
 import type { Api, Partner, UseCase } from "../api";
 import { UseCaseCard } from "./UseCaseCard";
-import { TopBar, Loading, EmptyState, ErrorState, LakeAllianceMark, BriefcaseIcon } from "./Chrome";
+import { TopBar, Loading, EmptyState, ErrorState } from "./Chrome";
 
 export function BoardPage({ partner, api }: { partner: Partner | null; api: () => Api }) {
   const { isSignedIn } = useAuth();
@@ -32,31 +32,13 @@ export function BoardPage({ partner, api }: { partner: Partner | null; api: () =
       />
       <main className="main">
         <div className="main-wrap">
-          {/* The "who are you?" chooser is only for signed-out visitors. Once
-              signed in (partner OR Databricks employee viewing the board), it's
-              hidden — the rail shows which role you're signed in as instead. */}
+          {/* Signed-out visitors get one sign-in entry. Sign-in is unified: the
+              same email box routes @databricks.com employees to admin and
+              everyone else to the partner board, so a single button is enough. */}
           {!isSignedIn && (
-            <section className="chooser" aria-label="Choose how to continue">
-              <p className="section-label">Who are you?</p>
-              <div className="chooser-cards">
-                <Link className="path-card" to="/signin">
-                  <span className="path-icon dbx" aria-hidden>
-                    <LakeAllianceMark />
-                  </span>
-                  <h3>Databricks user</h3>
-                  <p>Post opportunities and review the partners who raise their hand.</p>
-                  <span className="path-cta">Sign in with your Databricks email</span>
-                </Link>
-
-                <Link className="path-card" to="/signin">
-                  <span className="path-icon partner" aria-hidden>
-                    <BriefcaseIcon />
-                  </span>
-                  <h3>Partner</h3>
-                  <p>Sign in with your email, then browse open briefs and raise your hand.</p>
-                  <span className="path-cta">Sign in as a partner</span>
-                </Link>
-              </div>
+            <section className="signin-prompt" aria-label="Sign in">
+              <Link className="btn btn-primary" to="/signin">Sign in</Link>
+              <p className="signin-hint">Databricks employees: use your Databricks email.</p>
             </section>
           )}
 
