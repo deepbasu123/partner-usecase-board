@@ -97,7 +97,7 @@ export function makeApi(getToken: () => Promise<string | null>) {
       })).then(json<{ id: string }>),
 
     // ── admin ────────────────────────────────────────────────────────────
-    // login needs no token — it MINTS the cookie; still same-origin credentials.
+    // login needs no token - it MINTS the cookie; still same-origin credentials.
     adminLogin: (password: string) =>
       fetch(`${BASE}/api/admin/login`, {
         method: "POST",

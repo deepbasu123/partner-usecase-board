@@ -5,7 +5,7 @@ import { makeApi } from "./api";
 
 export type Role = "loading" | "partner" | "admin";
 
-// Resolve the caller's role. Order (all fail-safe — ambiguity => not admin):
+// Resolve the caller's role. Order (all fail-safe - ambiguity => not admin):
 //   1. Clerk still loading                -> "loading"
 //   2. signed-in @databricks.com email    -> "admin"  (email from Clerk)
 //   3. else GET /api/admin/whoami == 200   -> "admin"  (break-glass cookie)

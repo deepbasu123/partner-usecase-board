@@ -36,7 +36,7 @@ export default function App() {
     }).catch(() => { /* transient: keep state; board is public anyway */ });
   }, [role, isLoaded, isSignedIn, api]);
 
-  // Onboarding redirect — effect, never during render.
+  // Onboarding redirect - effect, never during render.
   useEffect(() => {
     if (needsOnboarding && pathname !== "/onboarding") navigate("/onboarding");
   }, [needsOnboarding, pathname, navigate]);
@@ -68,7 +68,7 @@ export default function App() {
             path="/admin/login"
             element={role === "admin" ? <Navigate to="/admin" replace /> : <AdminLogin api={api} onAuthed={refresh} />}
           />
-          {/* Admin cockpit — gated in the UI by role; the backend gates the data. */}
+          {/* Admin cockpit - gated in the UI by role; the backend gates the data. */}
           <Route
             path="/admin"
             element={role === "admin" ? <AdminCases api={api} /> : <Navigate to="/admin/login" replace />}

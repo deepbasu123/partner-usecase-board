@@ -25,7 +25,7 @@ _DEV_DEFAULT = "dev-only-not-secret-admin"
 _secret = os.environ.get("ADMIN_SESSION_SECRET", _DEV_DEFAULT)
 if _secret == _DEV_DEFAULT:
     log.warning(
-        "ADMIN_SESSION_SECRET is unset — using the insecure dev default. "
+        "ADMIN_SESSION_SECRET is unset - using the insecure dev default. "
         "Set ADMIN_SESSION_SECRET in production or admin cookies can be forged."
     )
 
@@ -68,7 +68,7 @@ def _databricks_clerk_email(request) -> str | None:
     """Return the verified Clerk email IFF it's a @databricks.com address, else None.
 
     Any verification failure returns None so require_admin falls through to the
-    cookie check and ultimately 401 — never grants admin on a bad token.
+    cookie check and ultimately 401 - never grants admin on a bad token.
     """
     auth = request.headers.get("Authorization", "")
     if not auth.startswith("Bearer "):

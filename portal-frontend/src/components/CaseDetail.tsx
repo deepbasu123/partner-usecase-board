@@ -54,7 +54,7 @@ export function CaseDetail({ partner, api }: { partner: Partner | null; api: () 
                 </div>
                 <h1>{uc.title}</h1>
                 {/* Poster (a @databricks.com email) is shown only to signed-in
-                    users — the case detail endpoint is public, so we don't leak
+                    users - the case detail endpoint is public, so we don't leak
                     the internal email to anonymous visitors with a case link. */}
                 {isSignedIn && uc.posted_by && (
                   <div className="posted-by">
@@ -130,7 +130,7 @@ function EoiForm({
     return (
       <div className="card">
         <div className="notice notice-ok" role="status">
-          Thanks — your response is in.
+          Thanks, your response is in.
         </div>
         <p className="muted">
           The Databricks team will be in touch with <b>{company}</b> if it&apos;s a fit. You can

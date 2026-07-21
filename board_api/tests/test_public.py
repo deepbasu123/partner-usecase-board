@@ -1,6 +1,6 @@
 """Public API route tests using FastAPI TestClient with db + email mocked.
 
-No database required — every db call is patched, so these validate the HTTP
+No database required - every db call is patched, so these validate the HTTP
 contract (status codes, error handling) in isolation. Auth is exercised via
 dependency_overrides on clerk_auth.require_identity (Bearer-token gate).
 Patch targets are board_api.routes_public.* since the three former route files

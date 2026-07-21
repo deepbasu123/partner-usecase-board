@@ -1,10 +1,10 @@
-/* Partner Use-Case Board — Public Portal.
+/* Partner Use-Case Board - Public Portal.
    Shares the admin "SA tool" design system: warm-grey sidebar rail, white
    content, Databricks Lava red accent, green OPEN / grey CLOSED pills,
    sans-serif, clean white cards with hairline borders + soft shadows.
 
    Overflow discipline: grids use minmax(0,1fr), flex children get min-width:0,
-   and long text/URLs use overflow-wrap:anywhere — so nothing escapes its card. */
+   and long text/URLs use overflow-wrap:anywhere - so nothing escapes its card. */
 
 :root {
   /* brand */
@@ -14,7 +14,7 @@
   --navy: #1b3139;          /* Databricks navy (used for avatar, accents) */
   --navy-2: #14252b;
 
-  /* sidebar rail — warm light grey panel, not dark */
+  /* sidebar rail - warm light grey panel, not dark */
   --rail: #eeebe4;
   --rail-line: #e0dcd3;
 
@@ -74,12 +74,12 @@ a { color: var(--lava-dark); }
 .rail .logo .la-mark { width: 30px; height: 27px; flex: none; }
 .rail .logo .wordmark { font-weight: 700; font-size: 16px; line-height: 1.15; }
 
-/* lakeAlliance two-tone wordmark — unscoped so it also applies under
+/* lakeAlliance two-tone wordmark - unscoped so it also applies under
    .login-wordmark (admin login) and anywhere else the Wordmark renders. */
 .wm-lake { color: var(--ink); }
 .wm-alliance { color: var(--lava); }
 
-/* Role badge in the rail — shows how the current user is signed in. */
+/* Role badge in the rail - shows how the current user is signed in. */
 .role-badge {
   margin: 0 10px 14px;
   padding: 6px 10px;
@@ -160,7 +160,7 @@ a { color: var(--lava-dark); }
 .intro h2 { font-size: 22px; }
 .intro p { color: var(--ink-soft); font-size: 15px; margin: 8px 0 0; max-width: 62ch; }
 
-/* Signed-out sign-in invite. One CTA — the unified Clerk sign-in auto-routes
+/* Signed-out sign-in invite. One CTA - the unified Clerk sign-in auto-routes
    @databricks.com to admin and everyone else to the partner board, so no
    "who are you?" chooser is needed. Refined-editorial: warm wash, the layered
    mark, a two-tone headline, employee note as a footnote. */
@@ -231,7 +231,7 @@ a { color: var(--lava-dark); }
   animation: invite-rise .5s cubic-bezier(.2,.7,.2,1) both;
 }
 
-/* Brand panel — dark navy, layered-lines motif. */
+/* Brand panel - dark navy, layered-lines motif. */
 .signin-brand {
   position: relative; overflow: hidden;
   display: flex; flex-direction: column; gap: 30px; padding: 40px;
@@ -265,7 +265,7 @@ a { color: var(--lava-dark); }
 .signin-brand-points li span { color: var(--lava); flex: none; }
 .signin-brand-foot { font-size: 12px; letter-spacing: .02em; color: rgba(255,255,255,.5); }
 
-/* Auth panel — hosts the themed Clerk widget. */
+/* Auth panel - hosts the themed Clerk widget. */
 .signin-auth { padding: 40px; display: flex; flex-direction: column; gap: 20px; justify-content: center; }
 .signin-auth-head h2 { font-size: 22px; letter-spacing: -0.02em; }
 .signin-auth-head p { margin: 6px 0 0; color: var(--ink-soft); font-size: 14px; }

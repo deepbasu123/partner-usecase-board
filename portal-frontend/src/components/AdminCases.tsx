@@ -72,7 +72,7 @@ function CreateCaseForm({ api, onCreated }: { api: () => Api; onCreated: (c: Adm
         <div className="field">
           <label htmlFor="title">Title</label>
           <input id="title" value={title} onChange={(e) => setTitle(e.target.value)}
-                 placeholder="e.g. Workforce Management — ANZ" required />
+                 placeholder="e.g. Workforce Management, ANZ" required />
         </div>
         <div className="field">
           <label htmlFor="desc">The ask</label>
@@ -118,7 +118,7 @@ function CaseRow({ api, c, onChanged }: { api: () => Api; c: AdminCase; onChange
       const u = await api().setCaseStatus(c.id, c.status === "open" ? "closed" : "open");
       onChanged({ ...c, status: u.status, closed_at: u.closed_at });
     } catch {
-      setErr("Couldn't update — try again.");
+      setErr("Couldn't update. Try again.");
     } finally {
       setBusy(false);
     }

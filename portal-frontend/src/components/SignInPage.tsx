@@ -30,7 +30,7 @@ export function SignInPage() {
   return (
     <main className="signin-stage">
       <div className="signin-card">
-        {/* Brand panel — dark navy, layered-lines motif, value props. */}
+        {/* Brand panel - dark navy, layered-lines motif, value props. */}
         <aside className="signin-brand">
           <div className="signin-brand-top">
             <span className="signin-brand-mark" aria-hidden><LakeAllianceMark /></span>
@@ -41,7 +41,7 @@ export function SignInPage() {
             <p>Databricks posts real use cases looking for partner help. Sign in to
                browse open briefs and express interest.</p>
             <ul className="signin-brand-points">
-              <li><span aria-hidden>✳</span> One email, one code — no password</li>
+              <li><span aria-hidden>✳</span> One email, one code, no password</li>
               <li><span aria-hidden>✳</span> Databricks staff use their @databricks.com email</li>
               <li><span aria-hidden>✳</span> Only the Databricks team sees your response</li>
             </ul>
@@ -49,7 +49,7 @@ export function SignInPage() {
           <p className="signin-brand-foot">A Databricks app for Databricks partners</p>
         </aside>
 
-        {/* Auth panel — the unified Clerk sign-in (auto-routes by email domain). */}
+        {/* Auth panel - the unified Clerk sign-in (auto-routes by email domain). */}
         <section className="signin-auth" aria-label="Sign in">
           <div className="signin-auth-head">
             <h2>Sign in</h2>

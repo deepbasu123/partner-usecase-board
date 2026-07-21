@@ -33,7 +33,7 @@ def _inject_key(monkeypatch):
 def admin_client(monkeypatch):
     monkeypatch.setattr(admin_auth, "_ADMIN_PASSWORD", "secret")
     # Over http://testserver the client won't resend a Secure cookie, so mint
-    # a non-secure admin cookie here — mirrors the local COOKIE_SECURE=false path.
+    # a non-secure admin cookie here - mirrors the local COOKIE_SECURE=false path.
     monkeypatch.setattr(routes_admin, "_COOKIE_SECURE", False)
     c = TestClient(app)
     assert c.post("/api/admin/login", json={"password": "secret"}).status_code == 200

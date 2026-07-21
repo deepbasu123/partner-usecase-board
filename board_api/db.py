@@ -1,7 +1,7 @@
 """Neon Postgres access for the merged Partner Board API.
 
 Single connection source: the DATABASE_URL env var (Neon pooled string). No
-Databricks SDK, no credential minting — plain Postgres. The SPA never imports
+Databricks SDK, no credential minting - plain Postgres. The SPA never imports
 this module; only the FastAPI backend does, so DB credentials stay server-side.
 """
 import os
@@ -28,7 +28,7 @@ def _dsn() -> str:
     if not dsn:
         raise RuntimeError(
             "DATABASE_URL is required (Neon pooled connection string, "
-            "?sslmode=require only — no channel_binding).")
+            "?sslmode=require only - no channel_binding).")
     return dsn
 
 

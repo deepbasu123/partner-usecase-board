@@ -1,4 +1,4 @@
--- Partner Use-Case Board — Lakebase (Postgres) schema
+-- Partner Use-Case Board - Lakebase (Postgres) schema
 -- Three tables: partners, use_cases, responses.
 -- Applied to an existing Lakebase instance on the target workspace.
 

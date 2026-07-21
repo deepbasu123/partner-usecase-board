@@ -44,7 +44,7 @@ def test_send_logs_in_and_sends_single_message(monkeypatch):
 
 
 def test_fanout_sends_one_individual_message_per_recipient(monkeypatch):
-    """Each partner gets their OWN message with only their address in To —
+    """Each partner gets their OWN message with only their address in To -
     nobody is in another's To, and there is no Bcc header at all."""
     _creds(monkeypatch)
     smtp = _fake_smtp()
@@ -107,7 +107,7 @@ def test_send_raises_without_credentials(monkeypatch):
 
 
 def test_safe_swallows_send_failure(monkeypatch):
-    """A transport failure must NOT propagate — signup/EOI stay 200/201."""
+    """A transport failure must NOT propagate - signup/EOI stay 200/201."""
     monkeypatch.setattr(email, "GMAIL_USER", "")  # forces _connect to raise
     monkeypatch.setattr(email, "GMAIL_APP_PASSWORD", "")
     email._safe(["me@databricks.com"], "Hi", "Body")  # must not raise

@@ -13,7 +13,7 @@ function RailSignOut() {
     try {
       await makeApi(() => getToken()).adminLogout();  // drop break-glass cookie (no-op if none)
     } catch {
-      /* ignore — still sign out of Clerk below */
+      /* ignore - still sign out of Clerk below */
     }
     // Clerk signOut is a no-op for a break-glass-only session; the redirect
     // reloads the app so useRole re-resolves to signed-out.
@@ -36,7 +36,7 @@ function SignOutIcon() {
   );
 }
 
-/** lakeAlliance layered mark — three stacked layers (diamond + two chevrons). */
+/** lakeAlliance layered mark - three stacked layers (diamond + two chevrons). */
 export function LakeAllianceMark({ className = "la-mark" }: { className?: string }) {
   return (
     <svg
@@ -56,7 +56,7 @@ export function LakeAllianceMark({ className = "la-mark" }: { className?: string
   );
 }
 
-/** "lakeAlliance" wordmark — one word, "lake" navy + "Alliance" lava (no space). */
+/** "lakeAlliance" wordmark - one word, "lake" navy + "Alliance" lava (no space). */
 export function Wordmark({ className = "wordmark" }: { className?: string }) {
   return (
     <div className={className}>

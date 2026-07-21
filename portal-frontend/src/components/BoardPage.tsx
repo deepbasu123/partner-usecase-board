@@ -45,7 +45,7 @@ export function BoardPage({ partner, api }: { partner: Partner | null; api: () =
               </h2>
               <p className="signin-invite-sub">
                 Sign in to browse open use cases and raise your hand. We email you a
-                code — no password to remember.
+                code, so there's no password to remember.
               </p>
               <Link className="btn btn-primary signin-invite-cta" to="/signin">
                 Sign in
@@ -53,7 +53,7 @@ export function BoardPage({ partner, api }: { partner: Partner | null; api: () =
               <p className="signin-invite-note">
                 <span className="dot" aria-hidden />
                 <span className="signin-invite-note-txt">
-                  Databricks employees — sign in with your <b>@databricks.com</b> email
+                  Databricks employees: sign in with your <b>@databricks.com</b> email
                   to post and manage use cases.
                 </span>
               </p>
@@ -68,7 +68,7 @@ export function BoardPage({ partner, api }: { partner: Partner | null; api: () =
           ) : cases.length === 0 ? (
             <EmptyState
               title="No open use cases right now"
-              hint="Check back soon — new briefs are posted as they come up."
+              hint="Check back soon. New briefs are posted as they come up."
             />
           ) : (
             <div className="board">

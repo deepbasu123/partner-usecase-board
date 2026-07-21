@@ -1,6 +1,6 @@
 """Outbound email notifications for lakeAlliance.
 
-Transport is Gmail SMTP (smtplib, stdlib — no extra dependency). We use a Gmail
+Transport is Gmail SMTP (smtplib, stdlib - no extra dependency). We use a Gmail
 account + an app password because the app owns no sending domain; Gmail delivers
 to any recipient, unlike Resend's shared onboarding@ sender (owner-only). The
 account is set via GMAIL_USER / GMAIL_APP_PASSWORD (a 16-char Google App Password,
@@ -13,7 +13,7 @@ it (signup / post / EOI stay 200/201).
 Delivery & privacy: a fan-out (a new use case → every partner) sends ONE
 individual message per recipient, with that recipient's address in the visible
 To. This keeps recipients private (each person only ever sees their own address)
-AND improves inbox placement — a single Bcc blast with no real To recipient is a
+AND improves inbox placement - a single Bcc blast with no real To recipient is a
 strong spam-filter signal, which is why an earlier Bcc version landed in Spam.
 """
 import logging
@@ -57,7 +57,7 @@ def _send(to: list[str], subject: str, body: str) -> None:
     """Send ONE message with every address in `to` in the visible To header.
 
     Used for single-recipient mail (e.g. welcome). Raises on missing creds or
-    SMTP error so _safe() logs and swallows it. Keep the signature stable — the
+    SMTP error so _safe() logs and swallows it. Keep the signature stable - the
     send_* helpers and the tests depend on it.
     """
     if not to:
@@ -77,7 +77,7 @@ def _safe(to: list[str], subject: str, body: str) -> None:
 def _fanout(recipients: list[str], subject: str, body: str) -> None:
     """Send an INDIVIDUAL copy to each recipient over one SMTP connection.
 
-    Each message carries only that recipient's address in To — so no one sees
+    Each message carries only that recipient's address in To - so no one sees
     another's address, and there is a real To recipient (better deliverability
     than a Bcc blast). Best-effort per recipient: one bad address is logged and
     skipped without blocking the rest; a connect/login failure is swallowed so
@@ -100,7 +100,7 @@ def _fanout(recipients: list[str], subject: str, body: str) -> None:
 
 def send_welcome(to_email: str, company: str) -> None:
     _safe([to_email],
-          "You're in — lakeAlliance",
+          "You're in: lakeAlliance",
           f"Thanks for joining as {company}.\n\n"
           "We'll email you whenever a new use case is posted that you might be "
           "able to help with. You can browse the board any time.")
@@ -108,7 +108,7 @@ def send_welcome(to_email: str, company: str) -> None:
 
 def send_new_use_case(to_emails: list[str], title: str, description: str,
                       board_url: str) -> None:
-    # One individual email per partner (own address in To) — private + better
+    # One individual email per partner (own address in To) - private + better
     # inbox placement than a Bcc blast.
     _fanout(to_emails,
             f"New partner use case: {title}",

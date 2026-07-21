@@ -25,7 +25,7 @@ export function AdminPartners({ api }: { api: () => Api }) {
                 <tr key={p.id}>
                   <td><b>{p.company}</b></td>
                   <td><a href={`mailto:${p.email}`}>{p.email}</a></td>
-                  <td>{p.contact_name ?? "—"}</td>
+                  <td>{p.contact_name ?? "-"}</td>
                   <td className="muted nowrap">{new Date(p.created_at).toLocaleDateString()}</td>
                 </tr>
               ))}
