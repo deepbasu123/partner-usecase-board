@@ -129,3 +129,27 @@ def test_whoami_returns_admin_email(admin_client):
     r = admin_client.get("/api/admin/whoami")
     assert r.status_code == 200
     assert r.json()["email"] == routes_admin.ADMIN_EMAIL
+
+
+def test_logout_clears_admin_cookie_and_revokes_access(admin_client):
+    # Logged-in admin can reach a guarded route.
+    assert admin_client.get("/api/admin/whoami").status_code == 200
+    # Logout succeeds and instructs the client to drop the admin cookie.
+    r = admin_client.post("/api/admin/logout")
+    assert r.status_code == 200 and r.json() == {"ok": True}
+    assert "admin_session=" in r.headers.get("set-cookie", "")
+    # TestClient applies the Set-Cookie (expires the cookie) → access is revoked.
+    assert admin_client.get("/api/admin/whoami").status_code == 401
+
+
+def test_logout_works_without_being_logged_in():
+    # Unguarded: signing out must not error even with no valid cookie.
+    from board_api import routes_admin as ra
+    ra_secure = ra._COOKIE_SECURE
+    ra._COOKIE_SECURE = False
+    try:
+        c = TestClient(app)
+        r = c.post("/api/admin/logout")
+        assert r.status_code == 200 and r.json() == {"ok": True}
+    finally:
+        ra._COOKIE_SECURE = ra_secure

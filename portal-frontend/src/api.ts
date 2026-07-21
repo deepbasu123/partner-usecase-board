@@ -11,6 +11,7 @@ export type UseCase = {
   industry?: string | null;
   region?: string | null;
   status: string;
+  posted_by?: string | null;
   created_at: string;
 };
 
@@ -104,6 +105,11 @@ export function makeApi(getToken: () => Promise<string | null>) {
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ password }),
       }).then(json<{ ok: boolean }>),
+    // Clears the break-glass admin cookie server-side (it's httponly, so JS
+    // can't). Clerk sessions are signed out separately via Clerk on the client.
+    adminLogout: () =>
+      fetch(`${BASE}/api/admin/logout`, { method: "POST", credentials: "include" })
+        .then(json<{ ok: boolean }>),
     adminWhoami: async () =>
       fetch(`${BASE}/api/admin/whoami`, await authInit()).then(json<{ email: string }>),
     listAllCases: async () =>

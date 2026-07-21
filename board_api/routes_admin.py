@@ -39,6 +39,18 @@ def login(body: AdminLoginIn, response: Response):
     return {"ok": True}
 
 
+@public_router.post("/api/admin/logout")
+def logout(response: Response):
+    # Clear the break-glass admin cookie. Unguarded: signing out must work even
+    # if the cookie is already invalid/expired. httponly means JS can't delete
+    # it client-side, so this endpoint is the only way to drop it. Clerk sessions
+    # (partner / @databricks.com) are ended separately by Clerk on the frontend.
+    response.delete_cookie(
+        ADMIN_COOKIE_NAME, httponly=True, secure=_COOKIE_SECURE, samesite="lax",
+    )
+    return {"ok": True}
+
+
 @router.post("/api/admin/use-cases", status_code=201)
 def create_case(body: UseCaseIn, request: Request):
     # posted_by = the actual signed-in Databricks person (their Clerk

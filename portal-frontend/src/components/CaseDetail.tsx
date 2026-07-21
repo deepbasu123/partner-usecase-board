@@ -1,10 +1,21 @@
 import { useEffect, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
+import { useAuth } from "@clerk/react";
 import { ApiError, type Api, type UseCase, type Partner } from "../api";
 import { TopBar, Loading, ErrorState } from "./Chrome";
 
+/** Turn a poster email into a display name: "deep.basu@databricks.com" → "Deep Basu".
+ *  Falls back to the raw local-part if it doesn't split into name-like tokens. */
+function posterName(email: string): string {
+  const local = email.split("@")[0] || email;
+  const parts = local.split(/[.\-_]+/).filter(Boolean);
+  if (!parts.length) return local;
+  return parts.map((p) => p.charAt(0).toUpperCase() + p.slice(1)).join(" ");
+}
+
 export function CaseDetail({ partner, api }: { partner: Partner | null; api: () => Api }) {
   const { id = "" } = useParams();
+  const { isSignedIn } = useAuth();
   const nav = useNavigate();
   const [uc, setUc] = useState<UseCase | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -42,6 +53,16 @@ export function CaseDetail({ partner, api }: { partner: Partner | null; api: () 
                   {uc.industry && <span className="tag">{uc.industry}</span>}
                 </div>
                 <h1>{uc.title}</h1>
+                {/* Poster (a @databricks.com email) is shown only to signed-in
+                    users — the case detail endpoint is public, so we don't leak
+                    the internal email to anonymous visitors with a case link. */}
+                {isSignedIn && uc.posted_by && (
+                  <div className="posted-by">
+                    Posted by <b>{posterName(uc.posted_by)}</b>, Databricks
+                    {" · "}
+                    <a href={`mailto:${uc.posted_by}`}>{uc.posted_by}</a>
+                  </div>
+                )}
               </div>
 
               <div className="detail-grid">

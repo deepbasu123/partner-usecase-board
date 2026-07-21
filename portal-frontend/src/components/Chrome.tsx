@@ -1,6 +1,40 @@
 import { Link, useLocation } from "react-router-dom";
-import { Show, UserButton } from "@clerk/react";
-import type { Partner } from "../api";
+import { Show, UserButton, useAuth, useClerk } from "@clerk/react";
+import { makeApi, type Partner } from "../api";
+
+/** Explicit "Sign out" control for the rail. Clears BOTH auth types: the
+ *  break-glass admin cookie (server-side, since it's httponly) and any Clerk
+ *  session, then lands back on the public board. Works for partners,
+ *  @databricks.com employees, and break-glass password admins alike. */
+function RailSignOut() {
+  const { getToken } = useAuth();
+  const { signOut } = useClerk();
+  async function handle() {
+    try {
+      await makeApi(() => getToken()).adminLogout();  // drop break-glass cookie (no-op if none)
+    } catch {
+      /* ignore — still sign out of Clerk below */
+    }
+    // Clerk signOut is a no-op for a break-glass-only session; the redirect
+    // reloads the app so useRole re-resolves to signed-out.
+    await signOut({ redirectUrl: "/" });
+  }
+  return (
+    <button type="button" className="navitem signout" onClick={handle}>
+      <SignOutIcon /> Sign out
+    </button>
+  );
+}
+
+function SignOutIcon() {
+  return (
+    <svg className="ico" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.7"
+      strokeLinecap="round" strokeLinejoin="round">
+      <path d="M8 17H4.5A1.5 1.5 0 0 1 3 15.5v-11A1.5 1.5 0 0 1 4.5 3H8" />
+      <path d="M13 14l4-4-4-4M17 10H8" />
+    </svg>
+  );
+}
 
 /** lakeAlliance layered mark — three stacked layers (diamond + two chevrons). */
 export function LakeAllianceMark({ className = "la-mark" }: { className?: string }) {
@@ -120,6 +154,7 @@ export function Rail({
               <span className="who-txt">{adminEmail}</span>
             </div>
           )}
+          <RailSignOut />
         </>
       ) : (
         <>
@@ -132,12 +167,14 @@ export function Rail({
               <JoinIcon /> Sign in as a partner
             </Link>
           </Show>
-          <Show when="signed-in">
-            <div className="navitem">
-              <UserButton /> {partner?.company ?? "Account"}
-            </div>
-          </Show>
           <div className="spacer" />
+          <Show when="signed-in">
+            <div className="rail-identity">
+              <UserButton />
+              <span className="who-txt">{partner?.company ?? "Account"}</span>
+            </div>
+            <RailSignOut />
+          </Show>
         </>
       )}
     </nav>
