@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { useAuth } from "@clerk/react";
 import type { Api, Partner, UseCase } from "../api";
 import { UseCaseCard } from "./UseCaseCard";
-import { TopBar, Loading, EmptyState, ErrorState } from "./Chrome";
+import { TopBar, Loading, EmptyState, ErrorState, LakeAllianceMark } from "./Chrome";
 
 export function BoardPage({ partner, api }: { partner: Partner | null; api: () => Api }) {
   const { isSignedIn } = useAuth();
@@ -36,9 +36,27 @@ export function BoardPage({ partner, api }: { partner: Partner | null; api: () =
               same email box routes @databricks.com employees to admin and
               everyone else to the partner board, so a single button is enough. */}
           {!isSignedIn && (
-            <section className="signin-prompt" aria-label="Sign in">
-              <Link className="btn btn-primary" to="/signin">Sign in</Link>
-              <p className="signin-hint">Databricks employees: use your Databricks email.</p>
+            <section className="signin-invite" aria-label="Sign in">
+              <div className="signin-invite-mark" aria-hidden>
+                <LakeAllianceMark />
+              </div>
+              <h2 className="signin-invite-title">
+                Where Databricks and its partners <em>meet</em>
+              </h2>
+              <p className="signin-invite-sub">
+                Sign in to browse open use cases and raise your hand. We email you a
+                code — no password to remember.
+              </p>
+              <Link className="btn btn-primary signin-invite-cta" to="/signin">
+                Sign in
+              </Link>
+              <p className="signin-invite-note">
+                <span className="dot" aria-hidden />
+                <span className="signin-invite-note-txt">
+                  Databricks employees — sign in with your <b>@databricks.com</b> email
+                  to post and manage use cases.
+                </span>
+              </p>
             </section>
           )}
 
