@@ -265,10 +265,19 @@ a { color: var(--lava-dark); }
 .signin-brand-points li span { color: var(--lava); flex: none; }
 .signin-brand-foot { font-size: 12px; letter-spacing: .02em; color: rgba(255,255,255,.5); }
 
-/* Auth panel - hosts the themed Clerk widget. */
-.signin-auth { padding: 40px; display: flex; flex-direction: column; gap: 20px; justify-content: center; }
+/* Auth panel - hosts the themed Clerk widget. min-width:0 lets this grid-column
+   child shrink instead of letting the widget overflow the panel. */
+.signin-auth {
+  min-width: 0; padding: 40px; display: flex; flex-direction: column; gap: 20px;
+  justify-content: center; align-items: stretch;
+}
 .signin-auth-head h2 { font-size: 22px; letter-spacing: -0.02em; }
 .signin-auth-head p { margin: 6px 0 0; color: var(--ink-soft); font-size: 14px; }
+/* Keep the Clerk widget within the panel. Width caps only — Clerk keeps its own
+   card padding so the fields keep their spacing (do NOT zero it here). */
+.signin-auth .cl-rootBox,
+.signin-auth .cl-card,
+.signin-auth .cl-cardBox { width: 100%; max-width: 100%; }
 
 @media (max-width: 720px) {
   .signin-stage { padding: 0; place-items: stretch; }

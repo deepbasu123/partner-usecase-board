@@ -15,14 +15,19 @@ const clerkAppearance = {
     fontFamily: 'ui-sans-serif, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
   },
   elements: {
-    rootBox: { width: "100%" },
-    card: { boxShadow: "none", border: "none", background: "transparent", padding: 0 },
-    header: { display: "none" },              // our own headline lives in the brand panel
-    footer: { display: "none" },              // hide Clerk's dev/branding footer chrome
-    formButtonPrimary: {
-      fontSize: "15px", textTransform: "none", fontWeight: 650,
-      boxShadow: "0 6px 16px -8px rgba(255,54,33,.8)",
-    },
+    // Keep Clerk's OWN card layout intact. An earlier version flattened it
+    // (padding:0, transparent) which collapsed the internal spacing so the
+    // label rode into the input and the form overflowed the panel. Now we only
+    // blend it: no outer border/shadow/background so it sits flush in our panel,
+    // but Clerk keeps its natural padding + width. Header/footer hidden because
+    // our brand panel + .signin-auth-head already provide the title.
+    rootBox: { width: "100%", display: "flex", justifyContent: "center" },
+    cardBox: { boxShadow: "none", border: "none", width: "100%" },
+    card: { boxShadow: "none", border: "none", background: "transparent", width: "100%" },
+    header: { display: "none" },
+    footer: { display: "none" },
+    formFieldInput: { boxShadow: "none" },   // kill the detached floating-input shadow
+    formButtonPrimary: { fontSize: "15px", textTransform: "none", fontWeight: 650, boxShadow: "none" },
   },
 };
 
